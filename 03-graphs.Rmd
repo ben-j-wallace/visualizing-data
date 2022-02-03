@@ -1,0 +1,200 @@
+# Making Graphs
+
+```{r knitr graphs, include = FALSE}
+knitr::opts_knit$set(message = FALSE, warning = FALSE)
+```
+
+```{r load packages graphs, include=FALSE}
+library(tidyverse)
+library(socviz)
+library(gapminder) # data on life expectancy, GDP per capita, pop 
+library(here)
+library(palmerpenguins)
+```
+
+> The peer review process... and the entire scientific enterprise is not designed to detect fraud.
+
+It is hard to design proceedings to ensure that people are honest with their publications. We often find problems after the fact.
+
+-   Ex: Honor Code
+
+We write out instructions or recipes, rather than doing a series of point-and-click steps.
+
+```{r create plot}
+p <- ggplot(data = gapminder, 
+            mapping = aes(x = gdpPercap,
+                          y = lifeExp)) # links variables to graphical elements on the plot.
+p + geom_point()
+
+```
+
+In R, we create **objects** by assigning something to a name. The **assignment operator** (\<-) attaches the output of the function `ggplot` to a the name `p`.
+
+Other aesthetic mappings can include, e.g., `color`, `shape`, and `size`.
+
+-   Mappings do not directly specify the particular, e.g., colors, shapes, and sizes that will appear on the plot. Instead they establish which variables will be represented by which visible elements.
+
+### What exactly is a graph anyway?
+
+We encode the data to create a "faithful representation" of the processes we see at play.
+
+The way people interpret plots depends on how well the data visualization can track back to the data.
+
+```{r second graph}
+final_plot_EDIT1 <- p + geom_point() + 
+  geom_smooth(method = 'lm') + # The geoms are drawn in the order that you provide them
+  scale_x_log10(label = scales::dollar_format()) + # Transforms x scale to a log scale. Does not change the data.
+  labs(x = 'GDP Per Capita',
+       y = 'Life Expectancy in Years',
+       title = 'Economic Growth and Life Expectancy',
+       subtitle = 'Data points are country-years',
+       caption = 'Data source: Gapminder')
+
+final_plot_EDIT1
+```
+
+The process of data visualization is additive. We supply functions to change the graph.
+
+-   `scales` package provides graphical scales to map data to aesthetics. Automatically determine breaks and labels.
+
+### How ggplot works: The flow of action
+
+1.  Tidy data
+
+2.  Mapping
+
+3.  Geom
+
+4.  Coordinates, scales
+
+    1.  usual `coord_cartesian()` but sometime another (e.g. polar coordinates in W.E.B. Du Bois plots from World Exposition)
+
+5.  Labels and guides
+
+    1.  `labs()` and `guides()`
+
+6.  Themes
+
+    1.  `theme_minimal()`
+
+There are two kinds of elements:
+
+1.  Visual elements that logically represent the plot (e.g. x and y axis representing quantities)
+2.  Others that are not connected to the data set and strictly thematic. These are controlled by a separate set of functions.
+
+## January 26, Making Graphs (Continuation)
+
+### Mapping vs. setting aesthetics
+
+-   Mapping allows the data to be represented. Setting provides a certain visual property that is not dependent on data.
+
+-   Mapping occurs in `aes()` function. Setting occurs in geom functions.
+
+```{r mapping vs setting}
+# color is mapped incorrectly. The property of color is mapped to the character string 'purple,' not the color of purple.
+p <- ggplot(data = gapminder,
+            mapping = aes(x = gdpPercap,
+                          y = lifeExp,
+                          color = 'purple')) 
+
+# color is set correctly.
+p + geom_point() +
+  geom_smooth(method = 'loess') +
+  scale_x_log10()
+
+p <- ggplot(data = gapminder,
+            mapping = aes(x = gdpPercap,
+                          y = lifeExp))
+
+p + geom_point(color = 'purple') +
+  geom_smooth(method = 'loess') +
+  scale_x_log10()
+```
+
+In data visualization, some elements will be mapped to **variables**, while others will be set to **values**.
+
+The mapping is passed onto the succeeding geoms.
+
+```{r mapping}
+p <- ggplot(data = gapminder,
+            mapping = aes(x = gdpPercap,
+                          y = lifeExp,
+                          color = continent,
+                          fill = continent))
+
+# Very "busy" graph.
+p + geom_point() +
+  geom_smooth(method = 'loess') +
+  scale_x_log10()
+
+```
+
+Pay close attention to which scales and guides are drawn, and which aren't.
+
+-   The guide shows the color of the point, line, and fill.
+
+-   But we can change by moving the mapping to geom functions rather than `ggplot()`.
+
+```{r altering mapping}
+p <- ggplot(data = gapminder,
+            mapping = aes(x = gdpPercap,
+                          y = lifeExp))
+
+# the geom_smooth function does not alter based on continent
+p + geom_point(mapping = aes(color = continent)) +
+  geom_smooth(method = 'loess') +
+  scale_x_log10()
+```
+
+Every mapped variable has a scale. Scales are represented by guides by default, unless explicitly removed.
+
+### Palmer Penguins and Simpson's Paradox
+
+-   Changing the mapping of certain aesthetics among geoms can change the interpretation of the graph.
+
+```{r simpsons paradox}
+p <- ggplot(data = penguins,
+            mapping = aes(x = bill_length_mm,
+                          y = bill_depth_mm))
+
+p + geom_point(mapping = aes(color = species)) +
+  geom_smooth(mapping = aes(color = species, fill = species), method = 'lm', se = FALSE) +
+  geom_smooth(method = 'lm', se = FALSE) +
+  labs(x = "Bill length (mm)",
+       y = "Bill depth (mm)",
+       title = "Simpson's Paradox among Penguin Dimensions",
+       subtitle = "After Separating by Species",
+       caption = "Source: Palmer Station Long Term Ecological Research") 
+  theme_bw()
+```
+
+> Like other rules of syntax, the grammar limits what you can validly say, but it doesn't make what you say intelligible or meaningful.
+
+### Grouped data and group aesthetic
+
+```{r grouped data}
+p <- ggplot(data = gapminder,
+            mapping = aes(x = year,
+                          y = gdpPercap))
+
+# the graph looks bad because the data has more structure than the graph knows. The unit is country-year, not year.
+p + geom_line()
+
+# now adding a grouped aesthetic for country.
+p <- p + geom_line(mapping = aes(group = country))
+
+# facet wrapping is not a geom. It is a way of arranging geoms.
+p + facet_wrap(~ continent)
+
+p + geom_line(color = "gray70",
+              mapping = aes(group = country)) +
+  geom_smooth(size = 1.1,
+              method = 'loess',
+              se = FALSE) +
+  scale_y_log10(labels = scales::dollar) +
+  facet_wrap(~ continent, ncol = 5) +
+  labs(x = "Year",
+       y = "GDP per Capita",
+       title = "GDP per capita on Five Continents")
+
+```

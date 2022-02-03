@@ -1,0 +1,62 @@
+# Vision Data and Design
+
+## Smoothers
+
+Default `method = 'loess'` is a non-parametric estimation and does not make assumptions about data. We can think of it as a "moving average"
+
+Span width determines the smoothness of the LOESS fit which can have a value between 0 and 1. A higher span gives more weight to a wider set of predictors. So a lower span runs the risk of overfitting the data while a higher span may miss important non-linear areas of the data (`method = 'lm'`).
+
+## Bad taste, bad data, and bad perception
+
+There are different ways that data visualizations can go wrong.
+- bad aesthetics
+- the underpinning problems of data
+- how humans misunderstand visual representations of data.
+
+### Bad taste
+
+"Chart junk" in Tufte's opinion, is bad taste. Visualizations should maximize the number of ideas with the smallest amount of ink.
+
+There is a limit. Going to far in minimizing visual elements can hurt human perceptions of data (box plot example).
+
+### Bad data
+
+Well-designed charts can be misleading if they have junk data.
+
+- Ex: Graph shows that younger people are less likely to think its "'essential' to live in a democracy." 95% CIs are included. Countries are ordered based on mean percentage in favor of democracy. Problems: x-axis includes times but is not a longitudinal study, line implies that there is data between decades. The question is not yes/no to democracy but "on a scale of 1-10 how important is it that you live in a democracy?" 9-10 was coded as yes, 8 and below as no.
+
+### Bad perception
+
+#### Edges and contrasts
+
+"Grid effect" is when we see images that aren't real in negative space when they intersect with edges.
+
+They are not illusions in the same way that a magic trick is an illusion. You can't "see through the trick" once you learn what is going on. 
+
+Contrasts seem larger when they the colors are touching each other. The background also makes a difference because it sets up a contrast. In other words, we perceive color relatively rather than absolutely.
+
+Gray-scale contrasts are much more easily perceived than color ones (evolutionarily, this stems from the fact that humans got color vision later than grayscale).
+
+- However, certain palettes are better than others in representing contrasts.
+
+#### Color
+
+Color is complicated. It is both objective (wavelengths) and subjective (what you see). 
+
+How do the colors we choose to represent quantities with map the underlying numbers that we think they represent?
+
+- A rainbow scheme often does not do that.
+
+- Color scales that are luminance balanced should be chosen.
+
+#### Pre-attentive processing
+
+We can use color to emphasize one point, regardless of volume.
+- Does not work as easily for shapes and it gets harder when we increase volume.
+
+- A plot should not be overwhelmed with mappings.
+
+## Gestalt inferences
+
+The habit or tendency to want to group things together.
+- By position, by color, by shape, or by connections (lines, shaded areas)

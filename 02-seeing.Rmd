@@ -1,0 +1,61 @@
+# January 19, Ways of Seeing
+
+### Berger and Renaissance Art
+
+> The process of seeing paintings, or seeing anything else, is less spontaneous than we are led to believe.
+>
+> \- John Berger
+
+-   There is a history of visual graphics that we need to contextualize in our own work.
+
+-   The reproduction of images especially changes the way that we look at art or other graphics.
+
+-   You have to 'read' paintings and look for its language.
+
+"Works of Art in the Age of Mechanical Reproduction" --Walter Benjamin
+
+-   Argues that reproduction 'devalues' the aura of art (e.g. Mona Lisa).
+
+-   Its value is really contingent on the context in which its produced and exists today.
+
+    -   Ex: nakedness, male gaze, etc.
+
+When we create data visualizations, we should consider the audience that will read it. Are we trying to explain something to them or persuade them, etc.?
+
+### Visual Literacy of Quantitative Data
+
+Anscombe's Quartet: Four scatterplots that produce the same summary statistics and line of best fit. We should look at data more closely to see what's going on.
+
+Voter turnout vs. Inequality: South Africa as an outlier in the 1970's.
+
+-   Included models with South Africa and not.
+
+Collected calls from Milwaukee to see how many to 911, after police brutality predicted that they would decrease trust and therefore 911 calls. Plot showed estimated calls and counterfactual.
+
+-   No data points, you should include them rather than just a line.
+
+-   Found seasonality, warmer months had more phone calls.
+
+It's not enough to just draw a line, we must also think about how non-linear processes generate data.
+
+-   We should consider audience and conventions of interpretation.
+
+    -   Pew Research: sugar consumption and decayed teeth. 62% interpreted correctly.
+
+> Is it possible to rework interpretations rather than simply reproducing them?
+
+Choropleth maps: may emphasize geographic structures that are not relevant to the research question. Conventional interpretations emphasize larger areas rather than the smaller ones, for instance.
+
+Data visualizations must juggle clarity, honesty, and truth.
+
+-   What does it mean to be clear? It depends on context.
+
+-   What does it mean to be honest? It depends on audience and conventions of interpretation.
+
+-   What does it mean to be truthful? It depends on the meaning of the data.
+
+What does the quantity of data today do to the way we think about individual experiences?
+
+-   **500,000 dots, does it minimize individual experiences? Or does it better focus our attention to what we can measure, what we can and can't see.**
+
+100 cities January-May 2020, data is both rich and limited.

@@ -1,0 +1,125 @@
+---
+title: "Problem Set 1"
+author: "Ben Wallace"
+date: "January 29, 2022"
+output: 
+  html_document:
+    theme: cosmo
+    highlight: tango
+---
+
+```{r, setup, include=FALSE}
+library(tidyverse)
+library(gapminder)
+library(palmerpenguins)
+library(socviz)
+knitr::opts_chunk$set(message = FALSE)   
+```
+
+## Gapminder Plots
+
+### Figure 1: GDP and Life Expectancy 1 
+
+```{r fig 1}
+p <- ggplot(data = gapminder,
+            mapping = aes(x = gdpPercap,
+                          y = lifeExp))
+
+p + geom_point() +
+  geom_smooth() +
+  labs(title = 'GDP and Life Expectancy',
+       x = 'GDP per Capita',
+       y = 'Life Expectancy',
+       caption = 'Data: Gapminder')
+```
+
+### Figure 2: GDP and Life Expectancy 2 
+
+```{r fig 2}
+p + geom_point() +
+  geom_smooth() +
+  scale_x_log10(label = scales::dollar_format()) +
+  labs(title = 'GDP and Life Expectancy',
+       x = 'GDP Per Capita (log scale)',
+       y = 'Life Expectancy',
+       caption = 'Data: Gapminder')
+```
+
+### Figure 3: GDP and Life Expectancy 3
+
+```{r fig 3}
+p <- ggplot(data = gapminder,
+            mapping = aes(x = gdpPercap,
+                          y = lifeExp,
+                          size = pop))
+
+p + geom_point() +
+  geom_smooth(method = 'lm') +
+  scale_x_log10(label = scales::dollar_format()) +
+  scale_size_binned(name = 'Population') +
+  labs(title = 'GDP, Life Expectancy, and Population',
+       x = 'GDP Per Capita (log scale)',
+       y = 'Life Expectancy',
+       caption = 'Data: Gapminder')
+  
+```
+
+### Figure 4: GDP and Life Expectancy 4 
+
+```{r fig 4}
+p <- ggplot(data = gapminder,
+            mapping = aes(x = lifeExp,
+                          y = gdpPercap,
+                          size = pop))
+
+p + geom_point(alpha = 0.15) +
+  geom_smooth() +
+  scale_y_log10(label = scales::dollar_format()) +
+  scale_size_binned(name = 'Population') +
+  labs(title = 'GDP, Life Expectancy, and Population',
+       x = 'Life Expectancy',
+       y = 'GDP Per Capita (log scale)',
+       caption = 'Data: Gapminder')
+```
+
+## Discussion
+
+1. Mappings
+
+- In figure 1, GDP per capita and life expectancy are mapped to the x- and y-axis, respectively.
+
+- In figure 2, a log-transformed measure of GDP per capita is mapped to the x- axis, and life expectancy is again mapped to the y-axis.
+
+- The mappings for the x- and y- axis in figure 2 are the same in figure 3. Additionally, the corresponding population for each country-year is mapped to size.
+
+- In figure 4, life expectancy is mapped to the x-axis, and GDP per capita is mapped to the y-axis. Population is again mapped to size.
+
+2. Tufte's principles
+
+The mapping of the size of points in `geom_point` to the population size of a country-year in figures 3 and 4 violates the principle of clarity by adding unnecessary information. There does not appear to to be a consistent relationship between life expectancy and population size. The first two plots, on the other hand, exhibit  greater clarity by emphasizing the relationship between GDP per capita and life expectancy without "graph junk." 
+
+All four figures satisfy Tufte's principle of "telling the truth about data" by representing the (generally) positive association between GDP Per capita and life expectancy. The mapping of population to point size works better for figure 4, which sets the points at a lower alpha-transparency, but does not in figure 3 since the larger points cover up smaller ones. Therefore, the third figure violates Tufte's principles of design and clarity.
+
+3. Differences in interpretation.
+
+Unlike figures 3 and 4, figure 2 does not map population to size. Therefore, reader's interpretation of the graph would not consider how population interacts with GDP per capita and life expectancy. Figure 3's `geom_smooth` layer creates least-squares regression line unlike figure 2 and 4. Because of this, interpretations of figure 3 might overlook regions that violate linearity such as outliers with high GDP per capitas.
+
+## Penguins Plot
+
+```{r penguin plot}
+p <- penguins %>%
+  filter(is.na(sex) == FALSE) %>% 
+  ggplot(mapping = aes(x = body_mass_g, y = flipper_length_mm, color = sex))
+
+p + geom_point(alpha = 0.5) +
+  geom_smooth(method = 'lm', color = 'purple', fill = 'purple') +
+  scale_color_discrete(name = 'Sex', labels = c('Female', 'Male')) +
+  labs(title = 'Body Mass and Flipper Length',
+       x = 'Body Mass (g)',
+       y = 'Flipper Length (mm)',
+       caption = 'Data: Palmer Station, Antarctica LTER') +
+  theme_light()
+  
+```
+
+Although the relationship between body mass and flipper length is positive throughout the figure, I find it interesting how the data is clustered by sex. The effect of species type might contribute to this phenomenon, leading to the possibility that female penguins from a species could have larger masses than male members of a different species. If I further grouped the data by sex-species, I could learn more about the relationship between sex and species with body mass. 
