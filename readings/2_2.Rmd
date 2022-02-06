@@ -1,0 +1,47 @@
+# Week 5, Seeing Data
+
+## Tufte, "Graphical Integrity"
+
+> Graphic excellence begins with telling the truth about the data.
+
+Examples of deception: 
+
+- Having a baseline that isn't zero or some understood number.
+
+- Showing magnitude that isn't proportional
+
+### What is Distortion in a Data Graphic?
+
+In past experiments, people have incorrectly compared areas between multiple shapes. Because of this, tables outperform graphics in reporting small data sets ("of twenty numbers or less"). 
+
+$\textrm{Lie factor} = \frac{\textrm{size of effect shown in graphic}}{\textrm{size of effect in data}}$
+
+A higher ratio is evidence of data distortion.
+
+### Design and Data Variation
+
+Generally, a scale should be moving in regular intervals. Changing scales can disguise design variation as data variation.
+
+Four graphs that show oil prices rapidly increasing miss the fact that oil prices decreased in the years prior. This omission leaves out context that would help explain why oil prices were increasing (reversion to mean, inflation, etc.).
+
+An aspect ratio that is narrower will make increases and decreases seem more extreme.
+
+### Context is Essential for Graphical Integrity
+
+> Graphics must not quote data out of context
+
+Comparisons can be made over time, across geography, revealing truths about the data that perhaps didn't appear before.
+
+### Summary
+
+- The representation of numbers, as physically measured on the surface of the graphic itself, should be directly proportional to the numerical quantities represented.
+
+- Clear, detailed, and thorough labeling should be used to defeat graphical distortion and ambiguity. 
+
+- Show data variation, not design variation
+
+- In time-series displays of money, deflated and standardized units of monetary measurement are nearly always better than nominal units
+
+- The number of information-carrying dimensions depicted should not exceed the number of dimensions in the data.
+
+- Graphics must not quote data out of context.
