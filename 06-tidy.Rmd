@@ -1,0 +1,159 @@
+# Tidy Data
+
+```{r knitr tidy, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+```{r setup tidy, include=FALSE}
+library(tidyverse)
+library(socviz)
+
+theme_set(theme_minimal())
+```
+
+> Problem set 2 will substitute the midterm project.
+
+We want to transform and summarize first before sending clean tables to `ggplot()`.
+
+## Counts are easy
+
+Use `geom_bar` to summarize counts. Stacked bar charts are not easy to interpret, so we can change `position = 'dodge'`, we can see the proportions of counts using the `mapping = fill`.
+
+## Transform data first if dealing with proportions or other summary statistics
+
+Row percents/row marginals and column percents/columns marginals (do rows sum to 100% or do columns?). We can also calculate total percents.
+
+`dplyr` lets you manipulate tables in a series of steps or a **pipeline**.
+
+### `group_by()`
+
+Groups the data at a lavel we want, such as "religion by Region" or "Authors by Publications by Year".
+
+### `filter()` and `select()`
+
+Subsets table based on rows and columns, respectively
+
+### `Mutate()`
+
+changes the data by creating new cvariables at the current level of grouping.
+
+### `Summarize()`
+
+Creates summary statistics for grouped data.
+
+## GSS Data example
+
+```{r gss longhand}
+rel_by_region <- gss_sm %>% 
+  group_by(bigregion, religion) %>% # group by bigregion and religion. Read right to left using 'within' or left to right using 'by'
+  summarize(n = n()) %>% 
+  mutate(freq = n / sum(n),
+         pct = round((freq * 100), 1))
+```
+
+### Objects in pipeline carry forward assumptions
+
+For example, the `group_by()` groups carries over to the `summarize()` and `mutate()` functions.
+
+The variable `n` created by `summarize()` can be used in the `mutate()` line. We can also use `freq` immediately after creating it.
+
+### Shorthand version
+
+```{r gss shorthand, echo=FALSE}
+gss_sm %>% 
+  group_by(bigregion, religion) %>% 
+  tally() # Produces the same output as summarize without as much code.
+
+gss_sm %>% 
+  count(bigregion, religion) # No group_by necessary, but this means no groups are created.
+```
+
+### Pipeline tables are easier to check for errors
+
+```{r pipeline easy, echo=FALSE}
+rel_by_region %>% 
+  group_by(bigregion) %>% 
+  summarize(total = sum(pct))
+```
+
+### GSS Graph
+
+```{r gss plot}
+p <- ggplot(data = rel_by_region,
+            mapping = aes(x = bigregion,
+                          y = pct,
+                          fill = religion))
+
+p + geom_col(position = 'dodge')
+```
+
+But this is not an effective graph!
+
+```{r}
+p <- ggplot(data = rel_by_region,
+            mapping = aes(x = pct,
+                          y = religion,
+                          fill = religion))
+
+p + geom_col(position = 'dodge') +
+  labs(x = 'Percent', y = NULL) +
+  guides(fill = 'none') +
+  facet_wrap(~ bigregion, nrow = 1)
+```
+
+- Try putting categories on the y-axis. 
+
+- Try faceting variables instead of mapping them.
+
+- Try to minimize the need for guides and legends.
+
+> Note that these rules are not absolute.
+
+## Other forms of facetting
+
+### Facetting multiple variables
+
+```{r facet wrap multiple}
+p <- ggplot(data = gss_sm, mapping = aes(x = age, y = childs))
+
+p + geom_point(alpha = 0.2) +
+  geom_smooth() + facet_wrap(~ sex + race, nrow = 1) + # The formula syntax isn't limited to one variable
+  theme_minimal()
+```
+
+### Facet grid
+
+```{r facet grid}
+p + geom_point(alpha = 0.2) +
+  geom_smooth() + facet_grid(race ~ sex) # The dimensions of the table are defined. Race by sex.
+```
+
+Be careful of breaking the data into too many categories; data may not have enough observations of each category.
+
+## The Process
+
+- Full data and then
+
+- Subset data and then
+
+- Grouped calculation and then
+
+- New columns or further summary and then
+
+- Plot and polish.
+
+## Organ Data
+
+```{r organ plot 1}
+organdata %>% 
+  ggplot(mapping = aes(x = year, y = donors, group = country)) +
+  geom_line() + facet_wrap(~ reorder(country, -donors, FUN = mean, na.rm = TRUE))
+```
+
+```{r organ plot 2}
+organdata %>% 
+  ggplot(mapping = aes(x = donors, y = reorder(country, donors, fill = world, na.rm = TRUE))) +
+  geom_boxplot() + 
+  labs(x = "Donors", y = NULL, fill = "Welfare State")
+```
+
