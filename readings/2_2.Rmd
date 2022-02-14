@@ -1,3 +1,31 @@
+# Week 7, What is Data
+
+## Cegłowski, Scott and Scurvy
+
+The cure for scurvy was lost in the second half of the nineteenth century.
+
+The cure for scurvy was discovered by James Lind, but his results were not institutionalized by the Royal Navy until forty years later. Why?
+
+- Steam power reduced travel times
+
+- Citrus juice a legal requirement "but in practical terms was superfluous"
+
+The Admirality replaced the lemon juice with lime juice in 1860 in order to use their own colonies' plantations rather than those produced in Europe (Sicily).
+
+- Lime juice is $\frac{1}{4}$ as effective.
+
+Main takeaways:
+
+1. Fifteenth century on, doctors rarely admitted that they didn't know the source of a disease.
+
+2. It is difficult to interpret historical evidence without using modern conceptions of vitamins.
+
+3. Technological progress can lead to surprising regressions.
+
+4. Not much evidence was needed to build Lind's theory.
+
+5. Simple diseases were still difficult to treat.
+
 # Week 5, Seeing Data
 
 ## Tufte, "Graphical Integrity"

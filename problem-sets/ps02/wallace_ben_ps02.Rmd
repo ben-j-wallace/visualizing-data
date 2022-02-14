@@ -1,0 +1,85 @@
+---
+title: "Problem Set 2"
+author: "Ben Wallace"
+date: "January 29, 2022"
+output: 
+  html_document:
+    theme: cosmo
+    highlight: tango
+---
+
+```{r load libraries, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(socviz)
+library(cowplot)
+```
+
+```{r set knitr, include=FALSE}
+knitr::opts_chunk$set(message=FALSE)
+```
+
+
+### Task 1
+
+```{r task 1}
+organdata %>% 
+  ggplot(mapping = aes(x = year, y = donors)) +
+  geom_point() +
+  geom_smooth()
+```
+
+### Task 2
+
+```{r task 2}
+organdata %>% 
+  ggplot(mapping = aes(x = year, y = donors)) +
+  geom_point() +
+  geom_smooth(method = 'lm') +
+  facet_wrap(~ reorder(country, -donors, mean, na.rm = TRUE))
+```
+
+### Task 3
+
+```{r task 3}
+organdata %>% 
+  ggplot(mapping = aes(x = year, y = donors)) +
+  geom_point() +
+  geom_smooth(method = 'lm') +
+  facet_wrap(~ reorder(world, -donors, mean, na.rm = TRUE))
+```
+
+### Task 4
+
+```{r task 4}
+p <- organdata %>% 
+  ggplot(mapping = aes(x = roads, y = donors)) +
+  geom_point() +
+  geom_smooth()
+
+organdata %>% 
+  ggplot(mapping = aes(x = cerebvas, y = donors)) +
+  geom_point() +
+  geom_smooth()
+
+organdata %>% 
+  ggplot(mapping = aes(x = assault, y = donors)) +
+  geom_point() + geom_smooth()
+```
+
+### Task 5
+
+```{r}
+organdata %>% 
+  group_by(consent_law) %>% 
+  summarise(mean_donors = mean(donors, na.rm = TRUE))
+```
+
+### Task 6
+
+```{r}
+# organdata %>% 
+#   group_by(consent_law, year) %>% 
+#   summarise(mean_donors = mean(donors, na.rm = TRUE)) %>% 
+#   ggplot(mapping = aes(x = ))
+```
+

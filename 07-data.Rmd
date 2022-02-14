@@ -1,0 +1,26 @@
+# What is Data
+
+Sports are a "model organism" of social science. The rules provide a rigid and episodic but still socially real model of human behavior.
+
+Random: Use `glue` package to add color to the titles and other labels.
+
+## History of Data
+
+There is a relationship between the history of data and the development of *markets* and the *state*.
+
+Categories used in data both reflect and express historically-contingent social formations.
+
+- Categories from North Carolina's 1790 census sets up the hierarchy from free white males to slaves.
+
+  - Later focus on how to categorize people who interracial through langauge of "Mulatto, Quadroom, Octoroon..." during Jim Crow.
+
+There are three broad ideas about the relationships between categories and the what we think of as the world or reality.
+
+- "Carving nature at the joints," trying to see what the world *objectively* looks like.
+
+- Process of data collection is subjective (e.g. American vs. French beef cuts).
+
+- Realists argue that there is an objective and subjective experience; purpose of science to approximate objectivity.
+
+Categories should be exclusive and exhaustive (i.e. observations cannot belong to more than one category and every observation should fit a category).
+
