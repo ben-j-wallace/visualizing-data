@@ -1,21 +1,24 @@
 ---
 title: "Problem Set 2"
 author: "Ben Wallace"
-date: "January 29, 2022"
-output: 
-  html_document:
+date: "February 15, 2022"
+output:
+  html_document: 
     theme: cosmo
     highlight: tango
+    df_print: kable
 ---
 
-```{r load libraries, warning=FALSE, message=FALSE}
+```{r load libraries, include=FALSE, message=FALSE}
 library(tidyverse)
 library(socviz)
 library(cowplot)
+
+theme_set(theme_light())
 ```
 
 ```{r set knitr, include=FALSE}
-knitr::opts_chunk$set(message=FALSE)
+knitr::opts_chunk$set(message=FALSE,warning=FALSE)
 ```
 
 
@@ -25,8 +28,14 @@ knitr::opts_chunk$set(message=FALSE)
 organdata %>% 
   ggplot(mapping = aes(x = year, y = donors)) +
   geom_point() +
-  geom_smooth()
+  geom_smooth() +
+  labs(title = "Organ Donations in OECD Countries",
+       caption = "Source: OECD",
+       x = "Year",
+       y = "Organ Donation Rate per Million")
 ```
+
+Each point in the scatterplot represents a country-year, but this graph is not very useful in connecting the trajectory of each country over time.
 
 ### Task 2
 
@@ -35,8 +44,16 @@ organdata %>%
   ggplot(mapping = aes(x = year, y = donors)) +
   geom_point() +
   geom_smooth(method = 'lm') +
-  facet_wrap(~ reorder(country, -donors, mean, na.rm = TRUE))
+  scale_x_date(date_breaks = "3 years",
+               date_labels = "%Y") +
+  facet_wrap(~ reorder(country, -donors, mean, na.rm = TRUE)) +
+  labs(title = "Organ Donations in OECD Countries",
+       caption = "Source: OECD",
+       x = "Year",
+       y = "Organ Donation Rate per Million")
 ```
+
+Overall, both `method = 'loess'` and `lm` are useful, but the linear fits miss some trends such as France, where organ donation rates dipped and later resurfaced. 
 
 ### Task 3
 
@@ -45,30 +62,48 @@ organdata %>%
   ggplot(mapping = aes(x = year, y = donors)) +
   geom_point() +
   geom_smooth(method = 'lm') +
-  facet_wrap(~ reorder(world, -donors, mean, na.rm = TRUE))
+  facet_wrap(~ reorder(world, -donors, mean, na.rm = TRUE)) +
+  labs(title = "Organ Donations in OECD Countries by Welfare State",
+       caption = "Source: OECD",
+       x = "Year",
+       y = "Organ Donation Rate per Million")
 ```
+
+After grouping based on welfare state, it does not appear that the categories differ that much. Except for Spain, which does not fit into any of the groups, the Corporatist, Liberal, and SocDem welfare categories all maintain an average around 12-17 organ donors per million, which is not that consequential of a difference.
 
 ### Task 4
 
 ```{r task 4}
-p <- organdata %>% 
+organdata %>% 
   ggplot(mapping = aes(x = roads, y = donors)) +
-  geom_point() +
-  geom_smooth()
+  geom_point() + geom_smooth() +
+  labs(title = "Organ Donations in OECD Countries by Road Accidents",
+       caption = "Source: OECD",
+       x = "Road Accident Fatalities per 100,000",
+       y = "Organ Donation Rate per Million")
 
 organdata %>% 
   ggplot(mapping = aes(x = cerebvas, y = donors)) +
-  geom_point() +
-  geom_smooth()
+  geom_point() + geom_smooth() +
+  labs(title = "Organ Donations in OECD Countries by Cerebrovascular Deaths",
+       caption = "Source: OECD",
+       x = "Cerebrovascular Deaths per 100,000",
+       y = "Organ Donation Rate per Million")
 
 organdata %>% 
   ggplot(mapping = aes(x = assault, y = donors)) +
-  geom_point() + geom_smooth()
+  geom_point() + geom_smooth() +
+  labs(title = "Organ Donations in OECD Countries by Assault Deaths",
+       caption = "Source: OECD",
+       x = "Assault Deaths per 100,000",
+       y = "Organ Donation Rate per Million")
 ```
+
+The three variables that I plotted with organ donation rates were road accident fatalities per 100,000, cerebrovascular deaths per 100,000, and assault deaths per 100,000. All three of these incidents would intuitively lead to more organ donors in a country, but this does not appear to be the case aside from the road accident fatalities measure. In the third plot, there is a mostly positive association between road accidents and organ donor rates, but this does not bear out for cerebrovascular and assault deaths. Perhaps  road accidents are more common than the other two cases and would thus contribute more to the organ donor rate. 
 
 ### Task 5
 
-```{r}
+```{r task 5}
 organdata %>% 
   group_by(consent_law) %>% 
   summarise(mean_donors = mean(donors, na.rm = TRUE))
@@ -76,10 +111,37 @@ organdata %>%
 
 ### Task 6
 
-```{r}
-# organdata %>% 
-#   group_by(consent_law, year) %>% 
-#   summarise(mean_donors = mean(donors, na.rm = TRUE)) %>% 
-#   ggplot(mapping = aes(x = ))
+```{r task 6}
+organdata %>%
+  group_by(consent_law, year) %>%
+  summarise(mean_donors = mean(donors, na.rm = TRUE)) %>%
+  ggplot(mapping = aes(x = year, color = consent_law, y = mean_donors)) +
+  geom_line() +
+  labs(title = "Organ Donations in OECD Countries by Consent Law",
+       caption = "Source: OECD",
+       x = "Year",
+       y = "Mean Donation Rate per Million",
+       color = "Consent Law") +
+  theme(legend.position = "bottom")
+```
+
+### Task 7
+
+```{r task 7}
+organdata %>%
+  group_by(year, consent_law) %>%
+  summarise(mean_donors = mean(donors, na.rm = TRUE),
+            sd_donors = sd(donors, na.rm = TRUE),
+            upper_bound = mean_donors + sd_donors,
+            lower_bound = mean_donors - sd_donors) %>% 
+  ggplot(mapping = aes(x = year, y = mean_donors)) +
+  geom_ribbon(aes(ymin = lower_bound, ymax = upper_bound), alpha = 0.2) +
+  geom_line() +
+  facet_wrap(~ consent_law) +
+  labs(title = "Organ Donations in OECD Countries by Consent Law",
+       caption = "Source: OECD",
+       x = "Year",
+       y = "Mean Donation Rate per Million",
+       color = "Consent Law")
 ```
 
