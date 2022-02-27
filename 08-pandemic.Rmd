@@ -1,0 +1,232 @@
+# Pandemic Data
+
+```{r setup pandemic, include = FALSE, messag=FALSE}
+library(tidyverse)
+library(socviz)
+library(here)
+library(covdata)
+library(slider)
+library(patchwork)
+```
+
+```{r knitr pandemic, include=FALSE}
+knitr::opts_chunk$set(message=FALSE, warning=FALSE, collapse=TRUE)
+```
+
+## Vegetable Fat and Animal Fat Plot
+
+The amount of vegetable fat is increasing but animal fat mostly steady. The conclusion is that "added fats and oils... increased by almost 30 pounds between 1970 and 2010." 
+
+- The number of firms reporting vegetable oil production increased.
+
+- **After a sudden change in a variable over time, the question should be "how has the collection of this data changed?"**
+
+## COVID-19
+
+Similarly, data collection about COVID-19 has changed over time, distorting the statistics that we might use.
+
+Reporting delays alter interpretations. 
+
+- So date of report vs. date of specimen collection are altered by weekly trends (more tests on Monday). Inferences can lead analysts to conclude the cases/tests are falling when they aren't.
+
+```{r pandemic data}
+country_rank <- stmf %>% 
+  filter(sex == 'b', year > 2014 & year < 2020) %>% 
+  select(country_code, cname, iso3, year:sex, age_group, death_rate, rate_total) %>% 
+  group_by(country_code) %>% 
+  summarize(mean_rate = mean(rate_total, na.rm = TRUE)) 
+```
+
+### `dplyr`'s window functions
+
+```{r cumsum}
+covnat_weekly %>% 
+  filter(iso3 == 'USA') %>% 
+  select(date, cname, iso3, cases) %>% 
+  mutate(cumulative = cumsum(cases))
+```
+
+`cume_dist()` gives the proportion of values less than or equal to the current
+
+```{r cume_dist}
+covnat_weekly %>% 
+  select(date, cname, iso3, deaths) %>% 
+  filter(iso3 == 'USA') %>% 
+  mutate(cume_dist(desc(deaths) < 0.1)) # i.e. top ten percent
+```
+
+`lead()` and `lag()` functions allow you to access the previous and next values in a vector
+
+```{r lag}
+my_vec <- c(1:20) 
+my_vec
+
+lag(my_vec)
+
+my_vec - lag(my_vec)
+```
+
+So this allows us to calculate off-sets.
+
+```{r covus}
+# covus %>% 
+#   select(-date_quality_grade) %>% 
+#   filter(measure == 'death') %>% 
+#   group_by(state) %>% 
+#   arrange(date) %>% 
+#   mutate(deaths_daily = count - lag(count, order_by = date))
+```
+
+We can always write functions using `function()`.
+
+```{r get_daily_count}
+get_daily_count <- function(count, date) {
+  count = lag(count, order_by = date)
+}
+```
+
+It is more useful to use functions when we want to perform several steps on the data.
+
+`dplyr`'s window functions don't include moving averages, so we can use the `slider` package.
+
+```{r slider}
+covus %>%
+  select(-data_quality_grade) %>%
+  filter(measure == 'death') %>%
+  group_by(state) %>%
+  arrange(date) %>%
+  mutate(deaths_daily = get_daily_count(count, date),
+         deaths7 = slide_mean(deaths_daily, before = 7, na_rm = TRUE)) %>%
+  arrange(state, desc(date)) %>%
+  filter(state %in% 'NY')
+```
+There are other `slider` functions like `slide_max()` and `slide_min()`.
+
+### Patchwork
+
+`patchwork` allows us to arrange several plots together.
+
+```{r pathwork}
+# p1 + p2 + p3 + guide_area() +
+# plot_layout(ncol = 2, guides = 'collect')
+```
+
+`guides = 'collect'` combines legends together so that it doesn't appear multiple times.
+
+## Organ Data
+
+```{r geom jitter}
+p <- ggplot(data = organdata,
+            mapping = aes(x = donors,
+                          y = reorder(country, donors, na.rm = TRUE),
+                          color = world)) +
+  geom_jitter() + labs(x = NULL) +
+  theme(legend.position = "top")
+
+p1 <- p + geom_jitter(position = position_jitter(width = 0.15)) + 
+  labs(x = NULL) + theme(legend.position = "top")
+
+p + p1
+```
+
+```{r by country}
+by_country <- organdata %>% group_by(consent_law, country) %>%
+    summarize(donors_mean= mean(donors, na.rm = TRUE),
+              donors_sd = sd(donors, na.rm = TRUE),
+              gdp_mean = mean(gdp, na.rm = TRUE),
+              health_mean = mean(health, na.rm = TRUE),
+              roads_mean = mean(roads, na.rm = TRUE),
+              cerebvas_mean = mean(cerebvas, na.rm = TRUE))
+
+
+# summarize across several variables
+
+by_country <- organdata %>% 
+  group_by(consent_law, country) %>%
+    summarize(across(where(is.numeric),
+                     list(mean = mean, 
+                          sd = sd),
+                      na.rm = TRUE,
+                      .names = "{col}_{fn}"),
+              .groups = "drop")
+```
+
+```{r country means}
+p <- ggplot(data = by_country,
+            mapping = aes(x = donors_mean,
+                          y = reorder(country, donors_mean),
+                          color = consent_law))
+
+p + geom_point(size = 3) +
+  labs(x = 'Donor Procurement Rate',
+       y = NULL, color = 'Consent Law') +
+  theme(legend.position = 'top')
+```
+
+```{r facet wrap organdata}
+p <- ggplot(data = by_country,
+            mapping = aes(x = donors_mean, y = reorder(country, donors_mean, na.rm = TRUE)))
+
+p + geom_point(size = 3) +
+  facet_wrap(~ consent_law, scales = 'free_y', ncol = 1) +
+  labs(x = 'Donor Procurement Rate',
+       y = '')
+```
+Add ranges.
+
+```{r geom_pointrange}
+p <- ggplot(data = by_country, 
+            mapping = aes(x = reorder(country, donors_mean, na.rm = TRUE),
+                          y = donors_mean))
+
+p + geom_pointrange(mapping = aes(ymin = donors_mean - donors_sd, 
+                                  ymax = donors_mean + donors_sd)) +
+  labs(y = 'Donor Procurement Rate',
+       x = '') +
+  coord_flip()
+```
+
+```{r elections_historic}
+library(ggrepel)
+
+elections_historic %>% select(2:7)
+```
+
+```{r president plot}
+p_title <- 'Presidential Elections: Popular & Electoral College Margins'
+p_subtitle <- '1824-2016'
+p_caption <- 'Data for 2016 are provisional'
+x_label <- "Winner's share of Popular Vote"
+y_label <- "Winner's share of Electoral College Votes"
+
+p <- ggplot(data = elections_historic, aes(x = popular_pct, y = ec_pct,
+                                           label = winner_label))
+
+p + geom_hline(yintercept = 0.5, size = 1.4, color = "gray80") +
+  geom_vline(xintercept = 0.5, size = 1.4, color = "gray80") +
+  geom_point() +
+  geom_text_repel() +
+  scale_x_continuous(labels = scales::percent) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(x = x_label, y = y_label, title = p_title, subtitle = p_subtitle,
+       caption = p_caption)
+```
+
+```{r selective labels}
+p <- ggplot(data = by_country,
+            mapping = aes(x = gdp_mean, y = health_mean))
+
+p + geom_point() +
+  geom_text_repel(data = subset(by_country, gdp_mean > 25000),
+                  mapping = aes(label = country))
+
+p <- ggplot(data = organdata,
+            mapping = aes(x = roads, y = donors))
+
+p + geom_point() +
+  annotate(geom = "rect", xmin = 125, xmax = 155,
+           ymin = 30, ymax = 35, fill = "red", alpha = 0.2) +
+  annotate(geom = "text", x = 157, y = 33,
+           label = "A surprisingly high \n recovery rate", hjust = 0)
+```
+

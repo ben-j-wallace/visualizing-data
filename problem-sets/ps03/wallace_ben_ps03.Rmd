@@ -1,0 +1,215 @@
+---
+title: "Problem Set 2"
+author: "Ben Wallace"
+date: "February 15, 2022"
+output:
+  html_document: 
+    theme: cosmo
+    highlight: tango
+    df_print: kable
+---
+
+```{r ps03 libraries, include = FALSE}
+library(tidyverse)
+library(socviz)
+library(slider)
+library(covdata)
+library(knitr)
+theme_set(theme_minimal())
+```
+
+
+## Section A: Short Term Mortality Fluctuations
+
+### Task 1
+
+```{r Belguim Plot}
+stmf %>% 
+  filter(cname == "Belgium", sex == "b") %>% 
+  group_by(year, week) %>% 
+  mutate(yr_ind = year %in% 2020) %>% 
+  slice(1) %>% 
+  ggplot(aes(x = week, y = deaths_total, color = yr_ind, group = year)) +
+  geom_line(size = 0.9) +
+  scale_color_manual(values = c("gray", "red"), labels = c("2000-2019", "2020")) +
+  labs(x = "Week of the Year", y = "Total Deaths", color = "Year", title = "Weekly recorded deaths in Belgium, 2000-2020") +
+  theme(legend.position = "top")
+  
+```
+
+### Task 2
+
+```{r compare men women}
+title <- "Death Rate by COVID-19 in Chile"
+caption <- "Source: Human Mortality Database"
+x_axis <- "Date"
+y_axis <- "Death Rate"
+
+df <- stmf %>% 
+  filter(cname == "Chile", year == 2020, sex != "b") %>% 
+  mutate(sex = ifelse(sex == "m", "Male", "Female")) %>% 
+  select(rate_total, approx_date, sex)
+
+df %>% 
+  rename(Sex = sex) %>% 
+  group_by(Sex) %>% 
+  summarize(`Median Mortality Rate` = median(rate_total, na.rm = T)) %>% 
+  knitr::kable(caption = "COVID-19 Mortality Among Chileans in 2020")
+
+ggplot(data = df, 
+       mapping = aes(x = approx_date, y = rate_total, 
+                     group = sex, linetype = sex)) + 
+  geom_line() +
+  labs(title = title,
+       caption = caption,
+       linetype = "Sex",
+       x = x_axis,
+       y = y_axis) +
+  theme(legend.position = "bottom")
+```
+
+Yes, it appears that the mortality rate in Chile was consistently higher among men then women.
+
+### Task 3
+
+```{r chile comparison}
+df <- stmf %>% 
+  filter(cname == "Chile", year == 2020, sex != "b", age_group == "75-84") %>% 
+  select(death_rate, approx_date, sex) %>%
+  rename(Sex = sex) %>% 
+  mutate(Sex = ifelse(Sex == "m", "Male", "Female"))
+
+df %>% 
+  group_by(Sex) %>% 
+  summarize(`Median Mortality Rate` = median(death_rate, na.rm = T)) %>% 
+  knitr::kable(caption = "COVID-19 Mortality Among Chileans in 2020, Ages 75-84")
+ 
+  ggplot(data = df,
+         mapping = aes(x = approx_date, y = death_rate, group = Sex, linetype = Sex)) + 
+    geom_line() +
+    labs(title = title,
+         subtitle = "Ages 75-84",
+         caption = caption,
+         linetype = "Sex",
+         x = x_axis,
+         y = y_axis) +
+    theme(legend.position = "bottom")
+  
+```
+
+Men in the 75-84 age group still have a higher mortality rate than women. However, the mortality rates among all Chileans in the age group higher than the national ones.
+
+## Section B: US Deaths due to COVID-19
+
+```{r nyt data}
+nytcovstate <- nytcovstate %>% 
+  group_by(state) %>% 
+  mutate(daily_cases = cases - lag(cases, order_by = date), 
+         daily_deaths = deaths - lag(deaths, order_by = date)) 
+
+state_pops <- uspop %>% 
+  filter(sex_id == "totsex", hisp_id == "tothisp") %>% 
+  select(state_abbr, statefips, pop, state) %>% 
+  rename(name = state,
+         state = state_abbr, fips = statefips) %>% 
+  mutate(state = replace(state, fips == "11", "DC"))
+```
+
+### Task 1
+
+```{r left_join nytcovstate}
+nytcovstate <- left_join(nytcovstate, state_pops, by = "state")
+```
+
+### Task 2
+
+```{r death per 100,000}
+nytcovstate %>%
+  group_by(state) %>%
+  summarize(case_rate = sum(daily_cases, na.rm = T)/100000,
+            death_rate = sum(daily_deaths, na.rm = T)/100000) %>% 
+  head(5) %>% 
+  kable(digits = 3)
+```
+
+### Task 3
+
+```{r 3 states}
+library(lubridate)
+nytcovstate %>% 
+  filter(state %in% c("Wyoming", "Vermont", "Alaska")) %>% 
+  ggplot(mapping = aes(x = date, y = daily_cases, group = state)) +
+  geom_point(alpha = 0.8, color = "gray80") +
+  labs(title = "COVID-19 in Alaska, Vermont, and Wyoming",
+       x = "Date",
+       y = "Daily Counts",
+       caption = "Sources: New York Times, Census Bureau") +
+  facet_wrap(~state)
+
+```
+
+### Task 4 
+
+```{r slide_dbl states}
+nytcovstate <- nytcovstate %>% 
+  filter(state %in% c("Wyoming", "Vermont", "Alaska")) %>% 
+  group_by(state) %>% 
+  mutate(weekly_avg = slide_dbl(.x = daily_cases, .i = date, .f = ~mean(.x, na.rm = T), .before = 6, .complete = F)) 
+
+
+ggplot(data = nytcovstate, mapping = aes(x = date, group = state)) +
+  geom_point(mapping = aes(y = daily_cases), alpha = 0.8, color = "gray80") +
+  geom_line(mapping = aes(y = weekly_avg), color = "darkred") +
+  labs(title = "COVID-19 in Alaska, Vermont, and Wyoming",
+       x = "Date",
+       y = "Daily Cases",
+       caption = "Sources: New York Times, Census Bureau") +
+  facet_wrap(~ state)
+```
+
+## Section C
+
+### Task 1 
+
+```{r raleigh}
+"Raleigh" %in% apple_mobility$region
+```
+
+### Task 2
+
+```{r mobility}
+apple_mobility$transportation_type = factor(apple_mobility$transportation_type, levels = c("walking", "driving", "transit"))
+
+levels(apple_mobility$transportation_type) <- c("Walking", "Driving", "Transit")
+
+apple_mobility %>% 
+  filter(region == "Raleigh") %>% 
+  ggplot(mapping = aes(x = date, y = score, group = transportation_type)) +
+  geom_point(alpha = 0.2, color = "gray30") +
+  labs(title = "Mobility Trends in Raleigh",
+       subtitle = "January 1, 2020 - October 18, 2021",
+       x = NULL,
+       y = "Activity Score") +
+  facet_wrap(~ transportation_type)
+```
+
+### Task 3
+
+These data roughly illustrate how "active" or "social" people in different regions are, at least for activities that require transportation. In the plot above, a reader can see both a gradual rebound in all forms of transit after the first wave of the pandemic as well as the stratification of transit forms (e.g. public transit recovers much slower than walking).
+
+If we wanted to compare the mobility trends for two or more places, we could `facet_wrap` by region and then by mode of transportation.
+
+```{r raleigh and nyc}
+
+apple_mobility %>% 
+  filter(region %in%  c("Raleigh", "New York City")) %>% 
+  ggplot(mapping = aes(x = date, y = score, group = transportation_type)) +
+  geom_point(alpha = 0.2, color = "gray30") +
+  ylim(0, 350) +
+  labs(title = "Mobility Trends in Raleigh and New York",
+       subtitle = "January 1, 2020 - October 18, 2021",
+       x = NULL,
+       y = "Activity Score") + 
+  facet_grid(rows = vars(transportation_type), cols = vars(region), scales = "fixed", switch = "y")
+```
+

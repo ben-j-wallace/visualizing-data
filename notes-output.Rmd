@@ -1,0 +1,969 @@
+---
+title: "Visualizing Society: Class Notes"
+author: "Ben Wallace"
+date: "1/12/2022"
+site: bookdown::bookdown_site
+output: bookdown::gitbook
+documentclass: book
+link-citations: yes
+description: "This is my notebook for SOCIOL 232 at Duke University"
+---
+# Class Notes: Visualizing Society {-}
+
+<!--chapter:end:index.Rmd-->
+
+# January 12, Learning R
+
+```{r knitr learningR, include = FALSE}
+knitr::opts_knit$set(message = FALSE, warning = FALSE)
+```
+
+```{r load packages, include=FALSE}
+library(tidyverse)
+library(socviz)
+library(gapminder) # data on life expectancy, GDP per capita, pop 
+library(here)
+library(palmerpenguins)
+```
+
+### What R looks like
+
+Code you can type and run
+
+```{r}
+# Inside code chunks, lines beginning with a # character are comments
+# Coments are ignored by R
+
+my_numbers <- c(1, 1, 2, 4, 1, 3, 1, 5)
+```
+
+By convention, code output in documents is prefixed by \#\#
+
+```{r code, echo = FALSE}
+my_numbers
+```
+
+### Everything in R has a name
+
+```{r names}
+my_numbers
+letters
+pi
+```
+
+**Forbidden** names
+
+```{r forbbidden names, eval = FALSE}
+TRUE
+FALSE
+Inf
+NaN
+NA
+
+for
+while
+if
+```
+
+The `c()` function *combines* or *concatenates* things
+
+```{r c function}
+object <- c("b", "e", "n")
+object
+```
+
+Use alt and - on Windows to use the assignment operator `<-` inside an code chunk. On the other hand, `=` has a different meaning when used in functions. You can use it for the `<-` assignment though. Just be consistent.
+
+```{r object}
+object = c("b", "e", "n")
+object
+```
+
+### Do things to objects with a function
+
+Functions take *inputs* to *arguments*. They perform *actions*. They produce, or return, *outputs*
+
+```{r function}
+mean(x = my_numbers)
+```
+
+In this case, the input is `my_numbers`, the argument is the vector `x`. The action is calculating the mean (e.g. the sum of the vector over its length). Finally, the function returns a vector of 1 length as an output, in other words, the mean of 2.25.
+
+When you do not know what a function does, use `?` or `??` in the console followed by the function's name to read its documentation.
+
+Functions can return things besides vectors.
+
+```{r function outputs}
+summary_numbers <- summary(my_numbers)
+summary_numbers
+class(summary_numbers)
+```
+
+The `rm` command can get rid of objects in the environment.
+
+```{r rm}
+rm(summary_numbers)
+```
+
+Functions can also be nested.
+
+```{r nested functions}
+c(1:20)
+
+mean(c(1:20))
+
+summary(mean(c(1:20)))
+
+names(summary(mean(c(1:20))))
+
+length(names(summary(c(1:20))))
+```
+
+Instead of nesting functions in parentheses, we can use the pipe operator `%>%`. This places the previous output into the first argument of the next. We can typically read the pipe as "and then."
+
+```{r pipe}
+c(1:20) %>% 
+  mean() %>% 
+  summary() %>%
+  names() %>% 
+  length()
+```
+
+The shortcut for the pipe operator is control + shift + m.
+
+### Types and classes
+
+The object inspector in RStudio is your friend.
+
+You can ask an object what it is.
+
+```{r}
+class(letters)
+
+typeof(letters)
+```
+
+It is important to know what class or type an object because functions may only work with certain types.
+
+```{r}
+sum(my_numbers)
+
+# sum(letters) would not work
+```
+
+### First plots
+
+```{r first plot}
+p <- ggplot(data = gapminder,
+            mapping = aes(x = log(gdpPercap),
+                          y = lifeExp))
+p + geom_point()
+
+# the same plot could be created using geom smooth
+
+p + geom_smooth()
+```
+
+<!--chapter:end:01-learningR.Rmd-->
+
+# January 19, Ways of Seeing
+
+### Berger and Renaissance Art
+
+> The process of seeing paintings, or seeing anything else, is less spontaneous than we are led to believe.
+>
+> \- John Berger
+
+-   There is a history of visual graphics that we need to contextualize in our own work.
+
+-   The reproduction of images especially changes the way that we look at art or other graphics.
+
+-   You have to 'read' paintings and look for its language.
+
+"Works of Art in the Age of Mechanical Reproduction" --Walter Benjamin
+
+-   Argues that reproduction 'devalues' the aura of art (e.g. Mona Lisa).
+
+-   Its value is really contingent on the context in which its produced and exists today.
+
+    -   Ex: nakedness, male gaze, etc.
+
+When we create data visualizations, we should consider the audience that will read it. Are we trying to explain something to them or persuade them, etc.?
+
+### Visual Literacy of Quantitative Data
+
+Anscombe's Quartet: Four scatterplots that produce the same summary statistics and line of best fit. We should look at data more closely to see what's going on.
+
+Voter turnout vs. Inequality: South Africa as an outlier in the 1970's.
+
+-   Included models with South Africa and not.
+
+Collected calls from Milwaukee to see how many to 911, after police brutality predicted that they would decrease trust and therefore 911 calls. Plot showed estimated calls and counterfactual.
+
+-   No data points, you should include them rather than just a line.
+
+-   Found seasonality, warmer months had more phone calls.
+
+It's not enough to just draw a line, we must also think about how non-linear processes generate data.
+
+-   We should consider audience and conventions of interpretation.
+
+    -   Pew Research: sugar consumption and decayed teeth. 62% interpreted correctly.
+
+> Is it possible to rework interpretations rather than simply reproducing them?
+
+Choropleth maps: may emphasize geographic structures that are not relevant to the research question. Conventional interpretations emphasize larger areas rather than the smaller ones, for instance.
+
+Data visualizations must juggle clarity, honesty, and truth.
+
+-   What does it mean to be clear? It depends on context.
+
+-   What does it mean to be honest? It depends on audience and conventions of interpretation.
+
+-   What does it mean to be truthful? It depends on the meaning of the data.
+
+What does the quantity of data today do to the way we think about individual experiences?
+
+-   **500,000 dots, does it minimize individual experiences? Or does it better focus our attention to what we can measure, what we can and can't see.**
+
+100 cities January-May 2020, data is both rich and limited.
+
+<!--chapter:end:02-seeing.Rmd-->
+
+# Making Graphs
+
+```{r knitr graphs, include = FALSE}
+knitr::opts_knit$set(message = FALSE, warning = FALSE)
+```
+
+```{r load packages graphs, include=FALSE}
+library(tidyverse)
+library(socviz)
+library(gapminder) # data on life expectancy, GDP per capita, pop 
+library(here)
+library(palmerpenguins)
+```
+
+> The peer review process... and the entire scientific enterprise is not designed to detect fraud.
+
+It is hard to design proceedings to ensure that people are honest with their publications. We often find problems after the fact.
+
+-   Ex: Honor Code
+
+We write out instructions or recipes, rather than doing a series of point-and-click steps.
+
+```{r create plot}
+p <- ggplot(data = gapminder, 
+            mapping = aes(x = gdpPercap,
+                          y = lifeExp)) # links variables to graphical elements on the plot.
+p + geom_point()
+
+```
+
+In R, we create **objects** by assigning something to a name. The **assignment operator** (\<-) attaches the output of the function `ggplot` to a the name `p`.
+
+Other aesthetic mappings can include, e.g., `color`, `shape`, and `size`.
+
+-   Mappings do not directly specify the particular, e.g., colors, shapes, and sizes that will appear on the plot. Instead they establish which variables will be represented by which visible elements.
+
+### What exactly is a graph anyway?
+
+We encode the data to create a "faithful representation" of the processes we see at play.
+
+The way people interpret plots depends on how well the data visualization can track back to the data.
+
+```{r second graph}
+final_plot_EDIT1 <- p + geom_point() + 
+  geom_smooth(method = 'lm') + # The geoms are drawn in the order that you provide them
+  scale_x_log10(label = scales::dollar_format()) + # Transforms x scale to a log scale. Does not change the data.
+  labs(x = 'GDP Per Capita',
+       y = 'Life Expectancy in Years',
+       title = 'Economic Growth and Life Expectancy',
+       subtitle = 'Data points are country-years',
+       caption = 'Data source: Gapminder')
+
+final_plot_EDIT1
+```
+
+The process of data visualization is additive. We supply functions to change the graph.
+
+-   `scales` package provides graphical scales to map data to aesthetics. Automatically determine breaks and labels.
+
+### How ggplot works: The flow of action
+
+1.  Tidy data
+
+2.  Mapping
+
+3.  Geom
+
+4.  Coordinates, scales
+
+    1.  usual `coord_cartesian()` but sometime another (e.g. polar coordinates in W.E.B. Du Bois plots from World Exposition)
+
+5.  Labels and guides
+
+    1.  `labs()` and `guides()`
+
+6.  Themes
+
+    1.  `theme_minimal()`
+
+There are two kinds of elements:
+
+1.  Visual elements that logically represent the plot (e.g. x and y axis representing quantities)
+2.  Others that are not connected to the data set and strictly thematic. These are controlled by a separate set of functions.
+
+## January 26, Making Graphs (Continuation)
+
+### Mapping vs. setting aesthetics
+
+-   Mapping allows the data to be represented. Setting provides a certain visual property that is not dependent on data.
+
+-   Mapping occurs in `aes()` function. Setting occurs in geom functions.
+
+```{r mapping vs setting}
+# color is mapped incorrectly. The property of color is mapped to the character string 'purple,' not the color of purple.
+p <- ggplot(data = gapminder,
+            mapping = aes(x = gdpPercap,
+                          y = lifeExp,
+                          color = 'purple')) 
+
+# color is set correctly.
+p + geom_point() +
+  geom_smooth(method = 'loess') +
+  scale_x_log10()
+
+p <- ggplot(data = gapminder,
+            mapping = aes(x = gdpPercap,
+                          y = lifeExp))
+
+p + geom_point(color = 'purple') +
+  geom_smooth(method = 'loess') +
+  scale_x_log10()
+```
+
+In data visualization, some elements will be mapped to **variables**, while others will be set to **values**.
+
+The mapping is passed onto the succeeding geoms.
+
+```{r mapping}
+p <- ggplot(data = gapminder,
+            mapping = aes(x = gdpPercap,
+                          y = lifeExp,
+                          color = continent,
+                          fill = continent))
+
+# Very "busy" graph.
+p + geom_point() +
+  geom_smooth(method = 'loess') +
+  scale_x_log10()
+
+```
+
+Pay close attention to which scales and guides are drawn, and which aren't.
+
+-   The guide shows the color of the point, line, and fill.
+
+-   But we can change by moving the mapping to geom functions rather than `ggplot()`.
+
+```{r altering mapping}
+p <- ggplot(data = gapminder,
+            mapping = aes(x = gdpPercap,
+                          y = lifeExp))
+
+# the geom_smooth function does not alter based on continent
+p + geom_point(mapping = aes(color = continent)) +
+  geom_smooth(method = 'loess') +
+  scale_x_log10()
+```
+
+Every mapped variable has a scale. Scales are represented by guides by default, unless explicitly removed.
+
+### Palmer Penguins and Simpson's Paradox
+
+-   Changing the mapping of certain aesthetics among geoms can change the interpretation of the graph.
+
+```{r simpsons paradox}
+p <- ggplot(data = penguins,
+            mapping = aes(x = bill_length_mm,
+                          y = bill_depth_mm))
+
+p + geom_point(mapping = aes(color = species)) +
+  geom_smooth(mapping = aes(color = species, fill = species), method = 'lm', se = FALSE) +
+  geom_smooth(method = 'lm', se = FALSE) +
+  labs(x = "Bill length (mm)",
+       y = "Bill depth (mm)",
+       title = "Simpson's Paradox among Penguin Dimensions",
+       subtitle = "After Separating by Species",
+       caption = "Source: Palmer Station Long Term Ecological Research") 
+  theme_bw()
+```
+
+> Like other rules of syntax, the grammar limits what you can validly say, but it doesn't make what you say intelligible or meaningful.
+
+### Grouped data and group aesthetic
+
+```{r grouped data}
+p <- ggplot(data = gapminder,
+            mapping = aes(x = year,
+                          y = gdpPercap))
+
+# the graph looks bad because the data has more structure than the graph knows. The unit is country-year, not year.
+p + geom_line()
+
+# now adding a grouped aesthetic for country.
+p <- p + geom_line(mapping = aes(group = country))
+
+# facet wrapping is not a geom. It is a way of arranging geoms.
+p + facet_wrap(~ continent)
+
+p + geom_line(color = "gray70",
+              mapping = aes(group = country)) +
+  geom_smooth(size = 1.1,
+              method = 'loess',
+              se = FALSE) +
+  scale_y_log10(labels = scales::dollar) +
+  facet_wrap(~ continent, ncol = 5) +
+  labs(x = "Year",
+       y = "GDP per Capita",
+       title = "GDP per capita on Five Continents")
+
+```
+
+<!--chapter:end:03-graphs.Rmd-->
+
+# Vision Data and Design
+
+## Smoothers
+
+Default `method = 'loess'` is a non-parametric estimation and does not make assumptions about data. We can think of it as a "moving average"
+
+Span width determines the smoothness of the LOESS fit which can have a value between 0 and 1. A higher span gives more weight to a wider set of predictors. So a lower span runs the risk of overfitting the data while a higher span may miss important non-linear areas of the data (`method = 'lm'`).
+
+## Bad taste, bad data, and bad perception
+
+There are different ways that data visualizations can go wrong.
+- bad aesthetics
+- the underpinning problems of data
+- how humans misunderstand visual representations of data.
+
+### Bad taste
+
+"Chart junk" in Tufte's opinion, is bad taste. Visualizations should maximize the number of ideas with the smallest amount of ink.
+
+There is a limit. Going to far in minimizing visual elements can hurt human perceptions of data (box plot example).
+
+### Bad data
+
+Well-designed charts can be misleading if they have junk data.
+
+- Ex: Graph shows that younger people are less likely to think its "'essential' to live in a democracy." 95% CIs are included. Countries are ordered based on mean percentage in favor of democracy. Problems: x-axis includes times but is not a longitudinal study, line implies that there is data between decades. The question is not yes/no to democracy but "on a scale of 1-10 how important is it that you live in a democracy?" 9-10 was coded as yes, 8 and below as no.
+
+### Bad perception
+
+#### Edges and contrasts
+
+"Grid effect" is when we see images that aren't real in negative space when they intersect with edges.
+
+They are not illusions in the same way that a magic trick is an illusion. You can't "see through the trick" once you learn what is going on. 
+
+Contrasts seem larger when they the colors are touching each other. The background also makes a difference because it sets up a contrast. In other words, we perceive color relatively rather than absolutely.
+
+Gray-scale contrasts are much more easily perceived than color ones (evolutionarily, this stems from the fact that humans got color vision later than grayscale).
+
+- However, certain palettes are better than others in representing contrasts.
+
+#### Color
+
+Color is complicated. It is both objective (wavelengths) and subjective (what you see). 
+
+How do the colors we choose to represent quantities with map the underlying numbers that we think they represent?
+
+- A rainbow scheme often does not do that.
+
+- Color scales that are luminance balanced should be chosen.
+
+#### Pre-attentive processing
+
+We can use color to emphasize one point, regardless of volume.
+- Does not work as easily for shapes and it gets harder when we increase volume.
+
+- A plot should not be overwhelmed with mappings.
+
+## Gestalt inferences
+
+The habit or tendency to want to group things together.
+- By position, by color, by shape, or by connections (lines, shaded areas)
+
+<!--chapter:end:04-visiondata.Rmd-->
+
+# Textual Analysis
+
+## Gutenberg data
+
+```{r knitr textual analysis, include = FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+```{r libraries textual analysis, include = FALSE}
+library(gutenbergr)
+library(tidytext)
+library(socviz)
+library(tidyverse)
+library(gapminder)
+```
+
+Gutenberg package helps us download plain text files of literature included in the repository.
+
+```{r}
+# Finding author
+gutenberg_works() %>%
+  filter(gutenberg_author_id == 1039)
+
+# Downloading Ulysses
+raw_text <- gutenberg_download(gutenberg_id = 4300)
+
+# Tidying data, tokenization process removes possessives, punctuation.
+full_text <- raw_text %>% 
+  mutate(line = row_number()) %>% 
+  unnest_tokens(output = word, input = text, token = 'words')
+```
+
+```{r}
+full_text %>% 
+  count(word, sort = TRUE)
+
+head(stop_words)
+```
+
+Stop words include the, and, of, and other nuts and bolts of grammar.
+
+We will anti-join by taking out any words in `full_text` that are included in `stop_words`.
+
+```{r}
+full_text %>%
+  anti_join(stop_words) %>%
+  filter(! str_detect(word, "'")) %>%
+  filter(! str_detect(word, "’")) %>%
+  count(word, sort = TRUE) %>%
+  top_n(20) %>%
+  mutate(word=reorder(word, n))
+```
+
+What sort of questions can we ask about this data? One option is sentiment analysis, a means of determining whether the text is more positive or negative.
+
+```{r}
+full_text %>% 
+  inner_join(get_sentiments('bing')) %>% 
+  count(sentiment, word, sort = TRUE) %>% 
+  group_by(sentiment) %>% 
+  arrange(desc(n)) %>% 
+  slice(1:20) %>% 
+  ungroup() %>% 
+  mutate(word = reorder(word, n)) %>% 
+  ggplot(mapping = aes(x = n, y = word, fill = sentiment)) +
+  geom_col() +
+  facet_wrap(~ sentiment, scales = "free") +
+  guides(fill = 'none')
+```
+
+
+```{r}
+full_text %>% 
+  inner_join(get_sentiments('nrc')) %>% 
+  count(sentiment, word, sort = TRUE) %>% 
+  group_by(sentiment) %>% 
+  slice(1:10) %>% 
+  ungroup() %>% 
+  mutate(word = reorder(word, n)) %>% 
+  ggplot(mapping = aes(x = n,
+                       y = word,
+                       fill = sentiment)) +
+  geom_col() +
+  guides(fill = 'none') +
+  facet_wrap(~ sentiment,
+             scales = 'free',
+             ncol = 3)
+```
+
+Now with Bigrams
+
+```{r}
+tidy_ngram <- raw_text %>% 
+  unnest_tokens(output = bigram, input = text, token = 'ngrams', n = 2) %>% 
+  separate(bigram, c('word1', 'word2'), sep = ' ') %>% 
+  filter(!word1 %in% stop_words$word, !word2 %in% stop_words$word) %>% 
+  count(word1, word2)
+```
+
+```{r}
+he_she <- raw_text %>% 
+  unnest_tokens(bigram, text, token = 'ngrams', n = 2) %>% 
+  separate(bigram, c('word1', 'word2'), sep = ' ') %>% 
+  filter(word1 %in% c('he', 'she', 'they')) %>% 
+  filter(!word2 %in% stop_words$word, !str_detect('word2', "'")) %>% 
+  count(word1, word2)
+
+he_she %>% 
+  group_by(word1) %>% 
+  slice(1:20) %>% 
+  ggplot(mapping = aes(x = n, y = word2, fill = word1)) +
+  geom_col() +
+  guides(fill = 'none') +
+  facet_wrap(~ word1, scales = 'free')
+```
+
+
+## Tidydata
+
+Underpinning any textual analysis is *tidy* data (tibble).
+
+- Every variable gets its own column
+- Every row is an observation
+- Every cell is a value.
+
+`ggplot` accepts tidy data. Some data frames are not tidy.
+
+- Example: Census data can organize education by several variables, such as elementary education being split into 0-4 years and 5-8 years. Spreading a variable across several columns means that it isn't tidy.
+
+- Excel sheets with a title row going across the data. Bolded or shaded information in a column that denotes a certain variable.
+
+Pivot commands can transform the shape of the data. Usually we need to move to longer format.
+
+```{r}
+head(edu, 5) # Needs to be transformed into long-form
+
+# Pick the columns that need to be put into a single column in cols argument. Then name the column. Finally, assign the values for the four colums to value_to argument.
+
+edu %>% 
+  pivot_longer(cols = elem4:coll4, names_to = "educ", values_to = "n") %>% 
+  head(5)
+```
+
+Pivoting wider
+
+```{r}
+# Take every value from year into its own column
+
+gapminder %>%  
+  pivot_wider(names_from = year, values_from = lifeExp:gdpPercap) %>% 
+  head(5)
+```
+
+## Saving your Work
+
+`ggsave` helps save individual plots. By default, it saves the most recent plot that was made. More easily, `ggsave` can save objects in the environment.
+
+
+<!--chapter:end:05-textualanalysis.Rmd-->
+
+# Tidy Data
+
+```{r knitr tidy, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+```{r setup tidy, include=FALSE}
+library(tidyverse)
+library(socviz)
+
+theme_set(theme_minimal())
+```
+
+> Problem set 2 will substitute the midterm project.
+
+We want to transform and summarize first before sending clean tables to `ggplot()`.
+
+## Counts are easy
+
+Use `geom_bar` to summarize counts. Stacked bar charts are not easy to interpret, so we can change `position = 'dodge'`, we can see the proportions of counts using the `mapping = fill`.
+
+## Transform data first if dealing with proportions or other summary statistics
+
+Row percents/row marginals and column percents/columns marginals (do rows sum to 100% or do columns?). We can also calculate total percents.
+
+`dplyr` lets you manipulate tables in a series of steps or a **pipeline**.
+
+### `group_by()`
+
+Groups the data at a lavel we want, such as "religion by Region" or "Authors by Publications by Year".
+
+### `filter()` and `select()`
+
+Subsets table based on rows and columns, respectively
+
+### `Mutate()`
+
+changes the data by creating new cvariables at the current level of grouping.
+
+### `Summarize()`
+
+Creates summary statistics for grouped data.
+
+## GSS Data example
+
+```{r gss longhand}
+rel_by_region <- gss_sm %>% 
+  group_by(bigregion, religion) %>% # group by bigregion and religion. Read right to left using 'within' or left to right using 'by'
+  summarize(n = n()) %>% 
+  mutate(freq = n / sum(n),
+         pct = round((freq * 100), 1))
+```
+
+### Objects in pipeline carry forward assumptions
+
+For example, the `group_by()` groups carries over to the `summarize()` and `mutate()` functions.
+
+The variable `n` created by `summarize()` can be used in the `mutate()` line. We can also use `freq` immediately after creating it.
+
+### Shorthand version
+
+```{r gss shorthand, echo=FALSE}
+gss_sm %>% 
+  group_by(bigregion, religion) %>% 
+  tally() # Produces the same output as summarize without as much code.
+
+gss_sm %>% 
+  count(bigregion, religion) # No group_by necessary, but this means no groups are created.
+```
+
+### Pipeline tables are easier to check for errors
+
+```{r pipeline easy, echo=FALSE}
+rel_by_region %>% 
+  group_by(bigregion) %>% 
+  summarize(total = sum(pct))
+```
+
+### GSS Graph
+
+```{r gss plot}
+p <- ggplot(data = rel_by_region,
+            mapping = aes(x = bigregion,
+                          y = pct,
+                          fill = religion))
+
+p + geom_col(position = 'dodge')
+```
+
+But this is not an effective graph!
+
+```{r}
+p <- ggplot(data = rel_by_region,
+            mapping = aes(x = pct,
+                          y = religion,
+                          fill = religion))
+
+p + geom_col(position = 'dodge') +
+  labs(x = 'Percent', y = NULL) +
+  guides(fill = 'none') +
+  facet_wrap(~ bigregion, nrow = 1)
+```
+
+- Try putting categories on the y-axis. 
+
+- Try faceting variables instead of mapping them.
+
+- Try to minimize the need for guides and legends.
+
+> Note that these rules are not absolute.
+
+## Other forms of facetting
+
+### Facetting multiple variables
+
+```{r facet wrap multiple}
+p <- ggplot(data = gss_sm, mapping = aes(x = age, y = childs))
+
+p + geom_point(alpha = 0.2) +
+  geom_smooth() + facet_wrap(~ sex + race, nrow = 1) + # The formula syntax isn't limited to one variable
+  theme_minimal()
+```
+
+### Facet grid
+
+```{r facet grid}
+p + geom_point(alpha = 0.2) +
+  geom_smooth() + facet_grid(race ~ sex) # The dimensions of the table are defined. Race by sex.
+```
+
+Be careful of breaking the data into too many categories; data may not have enough observations of each category.
+
+## The Process
+
+- Full data and then
+
+- Subset data and then
+
+- Grouped calculation and then
+
+- New columns or further summary and then
+
+- Plot and polish.
+
+## Organ Data
+
+```{r organ plot 1}
+organdata %>% 
+  ggplot(mapping = aes(x = year, y = donors, group = country)) +
+  geom_line() + facet_wrap(~ reorder(country, -donors, FUN = mean, na.rm = TRUE))
+```
+
+```{r organ plot 2}
+organdata %>% 
+  ggplot(mapping = aes(x = donors, y = reorder(country, donors, fill = world, na.rm = TRUE))) +
+  geom_boxplot() + 
+  labs(x = "Donors", y = NULL, fill = "Welfare State")
+```
+
+
+<!--chapter:end:06-tidy.Rmd-->
+
+# What is Data
+
+Sports are a "model organism" of social science. The rules provide a rigid and episodic but still socially real model of human behavior.
+
+Random: Use `glue` package to add color to the titles and other labels.
+
+## History of Data
+
+There is a relationship between the history of data and the development of *markets* and the *state*.
+
+Categories used in data both reflect and express historically-contingent social formations.
+
+- Categories from North Carolina's 1790 census sets up the hierarchy from free white males to slaves.
+
+  - Later focus on how to categorize people who interracial through langauge of "Mulatto, Quadroom, Octoroon..." during Jim Crow.
+
+There are three broad ideas about the relationships between categories and the what we think of as the world or reality.
+
+- "Carving nature at the joints," trying to see what the world *objectively* looks like.
+
+- Process of data collection is subjective (e.g. American vs. French beef cuts).
+
+- Realists argue that there is an objective and subjective experience; purpose of science to approximate objectivity.
+
+Categories should be exclusive and exhaustive (i.e. observations cannot belong to more than one category and every observation should fit a category).
+
+
+<!--chapter:end:07-data.Rmd-->
+
+# Pandemic Data
+
+```{r setup pandemic, include = FALSE, messag=FALSE}
+library(tidyverse)
+library(socviz)
+library(here)
+library(covdata)
+library(slider)
+library(patchwork)
+```
+
+```{r knitr pandemic, include=FALSE}
+knitr::opts_chunk$set(message=FALSE, warning=FALSE, collapse=TRUE)
+```
+
+### Vegetable Fat and Animal Fat Plot
+
+The amount of vegetable fat is increasing but animal fat mostly steady. The conclusion is that "added fats and oils... increased by almost 30 pounds between 1970 and 2010." 
+
+- The number of firms reporting vegetable oil production increased.
+
+- **After a sudden change in a variable over time, the question should be "how has the collection of this data changed?"**
+
+### COVID-19
+
+Similarly, data collection about COVID-19 has changed over time, distorting the statistics that we might use.
+
+Reporting delays alter interpretations. 
+
+- So date of report vs. date of specimen collection are altered by weekly trends (more tests on Monday). Inferences can lead analysts to conclude the cases/tests are falling when they aren't.
+
+```{r pandemic data}
+country_rank <- stmf %>% 
+  filter(sex == 'b', year > 2014 & year < 2020) %>% 
+  select(country_code, cname, iso3, year:sex, age_group, death_rate, rate_total) %>% 
+  group_by(country_code) %>% 
+  summarize(mean_rate = mean(rate_total, na.rm = TRUE)) 
+```
+
+#### `dplyr`'s window functions
+
+```{r cumsum}
+covnat_weekly %>% 
+  filter(iso3 == 'USA') %>% 
+  select(date, cname, iso3, cases) %>% 
+  mutate(cumulative = cumsum(cases))
+```
+
+`cume_dist()` gives the proportion of values less than or equal to the current
+
+```{r cume_dist}
+covnat_weekly %>% 
+  select(date, cname, iso3, deaths) %>% 
+  filter(iso3 == 'USA') %>% 
+  mutate(cume_dist(desc(deaths) < 0.1)) # i.e. top ten percent
+```
+
+`lead()` and `lag()` functions allow you to access the previous and next values in a vector
+
+```{r lag}
+my_vec <- c(1:20) 
+my_vec
+
+lag(my_vec)
+
+my_vec - lag(my_vec)
+```
+
+So this allows us to calculate off-sets.
+
+```{r covus}
+# covus %>% 
+#   select(-date_quality_grade) %>% 
+#   filter(measure == 'death') %>% 
+#   group_by(state) %>% 
+#   arrange(date) %>% 
+#   mutate(deaths_daily = count - lag(count, order_by = date))
+```
+
+We can always write functions using `function()`.
+
+```{r get_daily_count}
+get_daily_count <- function(count, date) {
+  count = lag(count, order_by = date)
+}
+```
+
+It is more useful to use functions when we want to perform several steps on the data.
+
+`dplyr`'s window functions don't include moving averages, so we can use the `slider` package.
+
+```{r slider}
+covus %>%
+  select(-data_quality_grade) %>%
+  filter(measure == 'death') %>%
+  group_by(state) %>%
+  arrange(date) %>%
+  mutate(deaths_daily = get_daily_count(count, date),
+         deaths7 = slide_mean(deaths_daily, before = 7, na_rm = TRUE)) %>%
+  arrange(state, desc(date)) %>%
+  filter(state %in% 'NY')
+```
+There are other `slider` functions like `slide_max()` and `slide_min()`.
+
+#### Patchwork
+
+`patchwork` allows us to arrange several plots together.
+
+```{r pathwork}
+# p1 + p2 + p3 + guide_area() +
+# plot_layout(ncol = 2, guides = 'collect')
+```
+
+`guides = 'collect'` combines legends together so that it doesn't appear multiple times.
+
+
+<!--chapter:end:08-pandemic.Rmd-->
+

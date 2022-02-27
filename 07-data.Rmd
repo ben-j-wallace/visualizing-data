@@ -24,3 +24,5 @@ There are three broad ideas about the relationships between categories and the w
 
 Categories should be exclusive and exhaustive (i.e. observations cannot belong to more than one category and every observation should fit a category).
 
+
+
