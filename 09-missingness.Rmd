@@ -1,0 +1,92 @@
+# Missing Data
+
+```{r knir missingness, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+There are two problems of missing data in data-- selection bias and missingness.
+
+## Selection Bias
+
+Survivorship bias: World War II planes coming back with bullet holes. The places that there weren't holes possibly led to more downed planes.
+
+- The missingness of some data is salient (i.e. representative of bias, data collection is systematically biased).
+
+- Development of statistics is related to development of state (war, market regulation, legal system).
+
+  - Reintegration into civilian life.
+  
+Other forms of selection bias:
+
+- Answering a poll emailed by a Republican-affiliated group/candidate, voting on a website.
+
+- Self-help books and looking only at "successful" or positive outcomes. Those that experience negative outcomes may have been doing the same thing.
+
+### Simpson's Paradox
+
+A variety of selection bias that is produced from omitting a key variable.
+
+- Ex: Palmer's penguins and omission of sex or species.
+
+- Berkley's admission case: Women weren't necessarily discriminated against, they applied to more competitive programs.
+
+> How to produce plots showed in slides?
+
+### Collider Bias
+
+When we control for an additional variable that is actually important (confounding).
+
+- Ex: Talent vs. looks in Hollywood vs. the general population.
+
+```{r library missingness, include = FALSE}
+library(tidyverse)
+library(socviz)
+library(naniar)
+library(visdat)
+
+theme_set(cowplot::theme_cowplot())
+```
+
+### Hollywood
+
+```{r hollywood}
+
+df <- tibble(looks = rnorm(1000),
+             talent = rnorm(1000),
+             total = looks + talent,
+             hollywood = total > quantile(total, 0.99)) # hollywood is top 1%
+
+df %>% 
+  ggplot(mapping = aes(x = talent,
+                       y = looks,
+                       color = hollywood)) +
+  geom_point(alpha = 0.4) + 
+  geom_smooth(method = "lm", se = F) +
+  scale_color_manual(values = c("navy", "yellow2")) +
+  labs(x = "Talent", y = "Looks", color = "Hollywood") +
+  theme(legend.position = "bottom")
+```
+
+## Missing Observations
+
+### Organ data and `visdat`
+
+```{r organdata missing}
+vis_dat(organdata)
+miss_var_summary(organdata) # Which variables have more missing data
+miss_case_summary(organdata) # Which cases have the most NAs for variables
+vis_miss(organdata, cluster = TRUE)
+gg_miss_upset(organdata) # Relationships in missingness between several variables
+
+ggplot(organdata,
+       aes(x = donors,
+           y = pubhealth)) +
+  geom_miss_point()
+```
+
+It's important to look at the missingness of data before fitting a model. 
+
+### Congressional Data
+
+#### Upset Plots
+

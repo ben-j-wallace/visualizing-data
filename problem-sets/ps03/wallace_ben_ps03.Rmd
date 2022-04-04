@@ -18,12 +18,16 @@ library(knitr)
 theme_set(theme_minimal())
 ```
 
+```{r ps03 knitr, include = FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
 
 ## Section A: Short Term Mortality Fluctuations
 
 ### Task 1
 
-```{r Belguim Plot}
+```{r belgium plot}
 stmf %>% 
   filter(cname == "Belgium", sex == "b") %>% 
   group_by(year, week) %>% 
@@ -178,9 +182,9 @@ ggplot(data = nytcovstate, mapping = aes(x = date, group = state)) +
 ### Task 2
 
 ```{r mobility}
-apple_mobility$transportation_type = factor(apple_mobility$transportation_type, levels = c("walking", "driving", "transit"))
-
-levels(apple_mobility$transportation_type) <- c("Walking", "Driving", "Transit")
+# apple_mobility$transportation_type = factor(apple_mobility$transportation_type, levels = c("walking", "driving", "transit"))
+# 
+# levels(apple_mobility$transportation_type) <- c("Walking", "Driving", "Transit")
 
 apple_mobility %>% 
   filter(region == "Raleigh") %>% 
@@ -205,7 +209,7 @@ apple_mobility %>%
   filter(region %in%  c("Raleigh", "New York City")) %>% 
   ggplot(mapping = aes(x = date, y = score, group = transportation_type)) +
   geom_point(alpha = 0.2, color = "gray30") +
-  ylim(0, 350) +
+  scale_y_continuous(limits  = c(0, 350)) +
   labs(title = "Mobility Trends in Raleigh and New York",
        subtitle = "January 1, 2020 - October 18, 2021",
        x = NULL,

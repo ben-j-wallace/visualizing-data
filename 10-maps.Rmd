@@ -1,0 +1,217 @@
+# Making Maps
+
+Geography was deinstitutionalized as a social science in the United States around the 1920's.
+
+- Connection to social geography, anthropology, and implementation in colonial projects.
+
+- So geography acted as a glue for emerging social sciences even after its decline.
+
+- 19th century theory connected land to culture (often to racialize culture).
+
+## Choropleths
+
+Show regions that are shaded or colored, cross-hashed by a quantity of interest.
+
+- Ex: electoral maps
+
+Fundamental problem is that the space/size can be confused as a significant characteristic of the data when it really isn't (e.g. the electoral victor of the most area may not have the same proportion of votes).
+
+- Correct by manipulating the physical geography by the population or some other variable.
+
+A cartogram turns geography into blocks or a series of polygons (e.g. electoral maps that have boxes or hexagons).
+
+- Looks less warped but still kind of weird.
+
+## State-level Election Data
+
+```{r maps load libraries, include = FALSE, message = FALSE, warning=FALSE}
+library(tidyverse)
+library(socviz)
+library(colorspace)
+library(sf)
+library(nycdogs)
+library(tigris)
+library(tidycensus)
+# library(cartogram)
+```
+
+```{r maps knitr, include = FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+```{r theme negate, include = FALSE}
+`%nin%` = Negate(`%in%`)
+
+theme_map <- function(base_size = 9, base_family = "") {
+  require(grid)
+  theme_bw(base_size=base_size, base_family=base_family) %+replace%
+    theme(axis.line=element_blank(),
+              axis.text=element_blank(),
+              axis.ticks=element_blank(),
+              axis.title=element_blank(),
+              panel.background=element_blank(),
+              panel.border=element_blank(),
+              panel.grid=element_blank(),
+              panel.spacing=unit(0, "lines"),
+              plot.background=element_blank(),
+              legend.justification = c(0,0),
+              legend.position = c(0,0))
+}
+
+theme_nymap <- function(base_size=9, base_family="") {
+    require(grid)
+    theme_bw(base_size=base_size, base_family=base_family) %+replace%
+        theme(axis.line=element_blank(),
+              axis.text=element_blank(),
+              axis.ticks=element_blank(),
+              axis.title=element_blank(),
+              panel.background=element_blank(),
+              panel.border=element_blank(),
+              panel.grid=element_blank(),
+              panel.spacing=unit(0, "lines"),
+              plot.background=element_blank(),
+              legend.justification = c(0,0),
+              legend.position = c(0.1, 0.6), 
+              legend.direction = "horizontal"
+        )
+}
+```
+
+```{r county pop map}
+county_full <- left_join(county_map, county_data, by = 'id')
+
+p <- ggplot(data = county_full,
+            mapping = aes(x = long, y = lat,
+                          fill = pop_dens,
+                          group = group))
+
+p1 <- p + geom_polygon(color = 'gray70', size = 0.1) + coord_equal()
+
+p2 <- p1 + scale_fill_brewer(palette = "Blues",
+                             labels = c("0-10", "10-50", "50-100", "100-500", "500-1,000", "1,000-5,000", ">5,000"))
+
+p2 + labs(fill = "Population per\nsquare mile") + theme_map() +
+  guides(fill = guide_legend(nrow = 1)) +
+  theme(legend.position = "bottom")
+```
+
+### Using simple features and `geom_sf()`
+
+```{r nycdogs data}
+nyc_fb <- nyc_license %>% 
+  group_by(zip_code, breed_rc) %>% 
+  tally() %>% 
+  mutate(freq = n / sum(n),
+         pct = round(freq * 100), 2) %>%
+  filter(breed_rc == "French Bulldog")
+
+fb_map <- left_join(nyc_zips, nyc_fb)
+```
+
+```{r dog map}
+fb_map %>% 
+  filter(n > 1) %>% 
+  ggplot(mapping = aes(fill = pct)) +
+  geom_sf(color = "gray80", size = 0.1) +
+  scale_fill_viridis_c(option = "A") +
+  labs(fill = "Percent of All Licensed Dogs") +
+  annotate(geom = "text", x = -74.145 + 0.029, y = 40.8075 - 0.012,
+           label = "New York City's French Bulldogs", size = 5) +
+  theme_nymap() +
+  guides(fill = guide_legend(title.position = "top",
+                             label.position = "bottom",
+                             keywidth = 1, nrow = 1))
+```
+
+### Keeping Zero Count Rows
+
+```{r license colors}
+nyc_license %>% 
+  filter(extract_year == 2018) %>% 
+  group_by(zip_code, breed_rc) %>% 
+  tally() %>% 
+  mutate(freq = n / sum(n),
+         pct = round(freq*100, 2)) %>% 
+  filter(breed_rc == "French Bulldog")
+
+nyc_fb <- nyc_license %>% 
+  group_by(zip_code, breed_rc) %>% 
+  tally() %>% 
+  ungroup() %>% 
+  complete(zip_code, breed_rc,
+           fill = list(n = 0)) %>% 
+  mutate(freq = n/sum(n),
+         pct = round(freq*100, 2)) %>% 
+  filter(breed_rc == "French Bulldog")
+
+fb_map <- left_join(nyc_zips, nyc_fb)
+```
+
+```{r dog map colors}
+fb_map %>% ggplot(mapping = aes(fill = pct)) +
+    geom_sf(color = "gray80", size = 0.1) +
+    scale_fill_continuous_sequential(palette = "Oranges") +
+   labs(fill = "Percent of All Licensed Dogs in the City") +
+  annotate(geom = "text", x = -74.145 + 0.029, y = 40.82-0.012, 
+           label = "New York City's French Bulldogs", size = 6) + 
+  annotate(geom = "text", x = -74.1468 + 0.029, y = 40.8075-0.012, 
+           label = "By Zip Code. Based on Licensing Data", size = 5) + 
+    theme_nymap() + 
+    guides(fill = guide_legend(title.position = "top", 
+                               label.position = "bottom",
+                             keywidth = 1, nrow = 1))
+```
+
+## Population Components Example
+
+```{r us_components}
+not_lower48 <- c("Alaska", "Hawaii", "Puerto Rico")
+  
+us_components <- get_estimates(geography = "state", 
+                               product = "components") %>% 
+  filter(NAME %nin% not_lower48)
+
+net_migration <- get_estimates(geography = "county",
+                               variables = "RNETMIG",
+                               year = 2019,
+                               geometry = TRUE,
+                               resolution = "20m") %>% 
+  filter(str_detect(NAME, "Alaska") == F | !str_detect(NAME, "Hawaii") == F | !str_detect(NAME, "Puerto Rico") == F)
+```
+
+```{r migration wrangling}
+order <- c("-15 and below", "-15 to -5", "-5 to +5", "+5 to +15", "+15 and up")
+
+net_migration <- net_migration %>%
+    mutate(groups = case_when(
+      value > 15 ~ "+15 and up",
+      value > 5 ~ "+5 to +15",
+      value > -5 ~ "-5 to +5",
+      value > -15 ~ "-15 to -5",
+      TRUE ~ "-15 and below"
+    )) %>%
+    mutate(groups = factor(groups, levels = order)) 
+
+ state_overlay <- states(
+    cb = TRUE,
+    resolution = "20m") %>%
+    filter(GEOID != "72",
+           NAME %nin% not_lower48)
+```
+
+```{r migration map}
+ggplot() +
+    geom_sf(data = net_migration, 
+            mapping = aes(fill = groups, color = groups), 
+            size = 0.1) +
+    geom_sf(data = state_overlay, 
+            fill = NA, color = "black", size = 0.1) +
+    scale_fill_brewer(palette = "PuOr", direction = -1) +
+    scale_color_brewer(palette = "PuOr", direction = -1, guide = "none") +
+    coord_sf(datum = NA) +
+    theme_minimal() +
+    labs(title = "Net migration per 1000 residents by county",
+         subtitle = "US Census Bureau 2019 Population Estimates",
+         fill = "Rate",
+         caption = "Data acquired with the R tidycensus package")
+```

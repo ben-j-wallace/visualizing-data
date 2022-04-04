@@ -17,24 +17,24 @@ library(gapminder)
 Gutenberg package helps us download plain text files of literature included in the repository.
 
 ```{r}
-# Finding author
-gutenberg_works() %>%
-  filter(gutenberg_author_id == 1039)
-
-# Downloading Ulysses
-raw_text <- gutenberg_download(gutenberg_id = 4300)
-
-# Tidying data, tokenization process removes possessives, punctuation.
-full_text <- raw_text %>% 
-  mutate(line = row_number()) %>% 
-  unnest_tokens(output = word, input = text, token = 'words')
+# # Finding author
+# gutenberg_works() %>%
+#   filter(gutenberg_author_id == 1039)
+# 
+# # Downloading Ulysses
+# raw_text <- gutenberg_download(gutenberg_id = 4300)
+# 
+# # Tidying data, tokenization process removes possessives, punctuation.
+# full_text <- raw_text %>% 
+#   mutate(line = row_number()) %>% 
+#   unnest_tokens(output = word, input = text, token = 'words')
 ```
 
 ```{r}
-full_text %>% 
-  count(word, sort = TRUE)
-
-head(stop_words)
+# full_text %>% 
+#   count(word, sort = TRUE)
+# 
+# head(stop_words)
 ```
 
 Stop words include the, and, of, and other nuts and bolts of grammar.
@@ -42,76 +42,76 @@ Stop words include the, and, of, and other nuts and bolts of grammar.
 We will anti-join by taking out any words in `full_text` that are included in `stop_words`.
 
 ```{r}
-full_text %>%
-  anti_join(stop_words) %>%
-  filter(! str_detect(word, "'")) %>%
-  filter(! str_detect(word, "’")) %>%
-  count(word, sort = TRUE) %>%
-  top_n(20) %>%
-  mutate(word=reorder(word, n))
+# full_text %>%
+#   anti_join(stop_words) %>%
+#   filter(! str_detect(word, "'")) %>%
+#   filter(! str_detect(word, "’")) %>%
+#   count(word, sort = TRUE) %>%
+#   top_n(20) %>%
+#   mutate(word=reorder(word, n))
 ```
 
 What sort of questions can we ask about this data? One option is sentiment analysis, a means of determining whether the text is more positive or negative.
 
 ```{r}
-full_text %>% 
-  inner_join(get_sentiments('bing')) %>% 
-  count(sentiment, word, sort = TRUE) %>% 
-  group_by(sentiment) %>% 
-  arrange(desc(n)) %>% 
-  slice(1:20) %>% 
-  ungroup() %>% 
-  mutate(word = reorder(word, n)) %>% 
-  ggplot(mapping = aes(x = n, y = word, fill = sentiment)) +
-  geom_col() +
-  facet_wrap(~ sentiment, scales = "free") +
-  guides(fill = 'none')
+# full_text %>% 
+#   inner_join(get_sentiments(lexicon = "bing")) %>% 
+#   count(sentiment, word, sort = TRUE) %>% 
+#   group_by(sentiment) %>% 
+#   arrange(desc(n)) %>% 
+#   slice(1:20) %>% 
+#   ungroup() %>% 
+#   mutate(word = reorder(word, n)) %>% 
+#   ggplot(mapping = aes(x = n, y = word, fill = sentiment)) +
+#   geom_col() +
+#   facet_wrap(~sentiment, scales = "free") +
+#   guides(fill = 'none')
 ```
 
 
 ```{r}
-full_text %>% 
-  inner_join(get_sentiments('nrc')) %>% 
-  count(sentiment, word, sort = TRUE) %>% 
-  group_by(sentiment) %>% 
-  slice(1:10) %>% 
-  ungroup() %>% 
-  mutate(word = reorder(word, n)) %>% 
-  ggplot(mapping = aes(x = n,
-                       y = word,
-                       fill = sentiment)) +
-  geom_col() +
-  guides(fill = 'none') +
-  facet_wrap(~ sentiment,
-             scales = 'free',
-             ncol = 3)
+# full_text %>% 
+#   inner_join(get_sentiments('nrc')) %>% 
+#   count(sentiment, word, sort = TRUE) %>% 
+#   group_by(sentiment) %>% 
+#   slice(1:10) %>% 
+#   ungroup() %>% 
+#   mutate(word = reorder(word, n)) %>% 
+#   ggplot(mapping = aes(x = n,
+#                        y = word,
+#                        fill = sentiment)) +
+#   geom_col() +
+#   guides(fill = 'none') +
+#   facet_wrap(~ sentiment,
+#              scales = 'free',
+#              ncol = 3)
 ```
 
 Now with Bigrams
 
 ```{r}
-tidy_ngram <- raw_text %>% 
-  unnest_tokens(output = bigram, input = text, token = 'ngrams', n = 2) %>% 
-  separate(bigram, c('word1', 'word2'), sep = ' ') %>% 
-  filter(!word1 %in% stop_words$word, !word2 %in% stop_words$word) %>% 
-  count(word1, word2)
+# tidy_ngram <- raw_text %>% 
+#   unnest_tokens(output = bigram, input = text, token = 'ngrams', n = 2) %>% 
+#   separate(bigram, c('word1', 'word2'), sep = ' ') %>% 
+#   filter(!word1 %in% stop_words$word, !word2 %in% stop_words$word) %>% 
+#   count(word1, word2)
 ```
 
 ```{r}
-he_she <- raw_text %>% 
-  unnest_tokens(bigram, text, token = 'ngrams', n = 2) %>% 
-  separate(bigram, c('word1', 'word2'), sep = ' ') %>% 
-  filter(word1 %in% c('he', 'she', 'they')) %>% 
-  filter(!word2 %in% stop_words$word, !str_detect('word2', "'")) %>% 
-  count(word1, word2)
-
-he_she %>% 
-  group_by(word1) %>% 
-  slice(1:20) %>% 
-  ggplot(mapping = aes(x = n, y = word2, fill = word1)) +
-  geom_col() +
-  guides(fill = 'none') +
-  facet_wrap(~ word1, scales = 'free')
+# he_she <- raw_text %>% 
+#   unnest_tokens(bigram, text, token = 'ngrams', n = 2) %>% 
+#   separate(bigram, c('word1', 'word2'), sep = ' ') %>% 
+#   filter(word1 %in% c('he', 'she', 'they')) %>% 
+#   filter(!word2 %in% stop_words$word, !str_detect('word2', "'")) %>% 
+#   count(word1, word2)
+# 
+# he_she %>% 
+#   group_by(word1) %>% 
+#   slice(1:20) %>% 
+#   ggplot(mapping = aes(x = n, y = word2, fill = word1)) +
+#   geom_col() +
+#   guides(fill = 'none') +
+#   facet_wrap(~ word1, scales = 'free')
 ```
 
 
@@ -132,13 +132,13 @@ Underpinning any textual analysis is *tidy* data (tibble).
 Pivot commands can transform the shape of the data. Usually we need to move to longer format.
 
 ```{r}
-head(edu, 5) # Needs to be transformed into long-form
-
-# Pick the columns that need to be put into a single column in cols argument. Then name the column. Finally, assign the values for the four colums to value_to argument.
-
-edu %>% 
-  pivot_longer(cols = elem4:coll4, names_to = "educ", values_to = "n") %>% 
-  head(5)
+# head(edu, 5) # Needs to be transformed into long-form
+# 
+# # Pick the columns that need to be put into a single column in cols argument. Then name the column. Finally, assign the values for the four colums to value_to argument.
+# 
+# edu %>% 
+#   pivot_longer(cols = elem4:coll4, names_to = "educ", values_to = "n") %>% 
+#   head(5)
 ```
 
 Pivoting wider
@@ -146,9 +146,9 @@ Pivoting wider
 ```{r}
 # Take every value from year into its own column
 
-gapminder %>%  
-  pivot_wider(names_from = year, values_from = lifeExp:gdpPercap) %>% 
-  head(5)
+# gapminder %>%  
+#   pivot_wider(names_from = year, values_from = lifeExp:gdpPercap) %>% 
+#   head(5)
 ```
 
 ## Saving your Work

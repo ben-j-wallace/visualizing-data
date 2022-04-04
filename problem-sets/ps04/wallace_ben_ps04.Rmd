@@ -1,0 +1,209 @@
+---
+title: "Problem Set 4"
+author: "Ben Wallace"
+date: "March 18, 2022"
+output:
+  html_document: 
+    theme: cosmo
+    highlight: tango
+    df_print: kable
+---
+
+```{r ps4 libraries, include = F, message = F}
+library(tidyverse)
+library(socviz)
+library(tidycensus)
+library(tigris)
+library(colorspace)
+library(cartogram)
+library(sf)
+library(hrbrthemes)
+```
+
+```{r ps4 knitr, include=F}
+knitr::opts_chunk$set(message = F)
+```
+
+```{r map theme, include = F}
+theme_map <- function(base_size=9, base_family="") {
+    require(grid)
+    theme_bw(base_size=base_size, base_family=base_family) %+replace%
+        theme(axis.line=element_blank(),
+              axis.text=element_blank(),
+              axis.ticks=element_blank(),
+              axis.title=element_blank(),
+              panel.background=element_blank(),
+              panel.border=element_blank(),
+              panel.grid=element_blank(),
+              panel.spacing=unit(0, "lines"),
+              plot.background=element_blank())
+}
+```
+
+```{r pop names, include=F}
+pop_names <- tribble(
+    ~varname, ~clean_name,
+    "B01003_001", "pop",
+    "B01001B_001", "black",
+    "B01001A_001", "white",
+    "B01001H_001", "nh_white",
+    "B01001I_001", "hispanic",
+    "B01001D_001", "asian"
+  )
+
+inc_names <- tribble(
+    ~varname, ~clean_name,
+    "S1901_C01_012", "median_hh_inc")
+```
+
+```{r fips, include=F}
+## Get state geography
+
+regions <- datasets::state.name
+
+states <- tigris::states() %>%
+  filter(NAME %in% regions | NAME == "Puerto Rico" | NAME == "District of Columbia") %>% 
+  shift_geometry()
+
+## Population groups
+## Code nerds note the use of `reduce` here 
+fips_pop <- get_acs(geography = "county", 
+                    variables = pop_names$varname, 
+                    cache_table = TRUE) %>% 
+  mutate(variable = reduce2(pop_names$varname, 
+                            pop_names$clean_name, 
+                            str_replace, 
+                            .init = variable)) %>% 
+  select(-moe) %>% 
+  pivot_wider(names_from = variable, values_from = estimate) %>% 
+  rename(fips = GEOID, name = NAME)
+
+## Income data
+fips_inc <- get_acs(geography = "county", 
+                    variables = inc_names$varname,  
+                    cache_table = TRUE) %>% 
+  mutate(variable = str_replace(variable, 
+                            inc_names$varname, 
+                            inc_names$clean_name)) %>% 
+  rename(fips = GEOID, name = NAME)
+
+fips_map <- get_acs(geography = "county", 
+                    variables = "B01001_001", 
+                    geometry = TRUE,
+                    shift_geo = FALSE,
+                    cache_table = TRUE) %>% 
+  shift_geometry() %>% 
+  select(GEOID, NAME, geometry) %>% 
+  rename(fips = GEOID, name = NAME)
+```
+
+### Task 1
+
+```{r race ethnicity prop} 
+rate_func <- function(x) {
+  (x / fips_pop$pop) * 100000
+}
+
+fips_pop <- fips_pop %>% 
+  mutate(across(white:hispanic, rate_func, .names = "{.col}_rate"))
+```
+
+### Task 2
+
+```{r join pop spatial}
+fips_map <- left_join(fips_map, fips_pop, by = "name")
+```
+
+I know that the merge worked because the variables in `fips_pop` have populated `fips_map`.
+
+### Task 3
+
+```{r black pop map}
+ggplot() +
+  geom_sf(data = fips_map, aes(fill = black_rate),
+          color = "gray70", size = 0.1) +
+  scale_fill_continuous_sequential(palette = "Blues") +
+  labs(fill = "Black Americans \n per 100,000") + 
+  theme_map()
+```
+
+```{r hispanic pop map}
+ggplot(data = fips_map, aes(fill = hispanic_rate)) +
+  geom_sf(color = "gray70", size = 0.1) +
+  scale_fill_continuous_sequential(palette = "Greens") +
+  labs(fill = "Hispanic Americans \n per 100,000") +
+  theme_map()
+```
+
+### Task 4
+
+```{r continuous to binned map}
+fips_map <- fips_map %>% 
+         mutate(across(white_rate:hispanic_rate, cut_interval, n = 5),
+                across(white_rate:hispanic_rate, factor))
+```
+
+```{r black pop map binned}
+values <- c("#D4E4BC", "#96ACB7", "#36558F", "#40376E", "#48233C")
+
+levels(fips_map$black_rate) <- c("0 to 17,400", "17,400 to 34,900",
+                                 "34,900 to 52,300", "52,300 to 69,800",
+                                 "69,800 to 87,200")
+
+ggplot(fips_map, aes(fill = black_rate)) +
+  geom_sf(color = "gray", size = 0.1) +
+  scale_fill_manual(values = values) +
+  labs(fill = "Black Population \n per 100,000") + 
+  theme_map()
+```
+
+```{r hispanic pop map binned}
+values <- c("#8DC27C", "#E0D76E", "#DEA95F", "#CC5A4B", "#6B4B3A")
+
+levels(fips_map$hispanic_rate) <- c("0 to 20,000", "20,000 to 40,000",
+                                    "40,000 to 60,000", "60,000 to 80,000", 
+                                    "80,000 to 100,000")
+
+ggplot(fips_map, aes(fill = hispanic_rate)) +
+  geom_sf(color = "gray", size = 0.1) +
+  scale_fill_manual(values = values) +
+  labs(fill = "Hispanic Population \n per 100,000") +
+  theme_map()
+```
+
+The maps with binned racial/ethnic measures are ultimately more informative since readers have difficulty differentiating gradient values. In contrast, a reader can easily notice differences between 5 color values on the maps.
+
+### Task 5
+
+```{r median income}
+fips_map <- left_join(fips_map, fips_inc, by = "name")
+
+ggplot(fips_map, aes(fill = estimate)) +
+  geom_sf(color = NA) +
+  scale_fill_continuous_sequential(palette = "Grays", labels = scales::label_number(), breaks = seq(25000, 150000, by = 25000))+
+  labs(fill = "Median Income") +
+  theme_map()
+  
+```
+
+### Task 6
+
+```{r wealthiest counties}
+fips_inc <- fips_inc %>% 
+  arrange(desc(estimate)) %>% select(name, estimate)
+  
+fips_inc %>% slice_head(n = 10)
+```
+
+```{r Puerto Rico}
+fips_inc %>% slice_tail(n = 5)
+```
+
+
+The five counties with the lowest median household income in the United States are all located in Puerto Rico. Which counties have the lowest in the mainland US?
+
+
+```{r}
+fips_inc %>% filter(!str_detect(name, "Puerto Rico")) %>% 
+  slice_tail(n = 5)
+```

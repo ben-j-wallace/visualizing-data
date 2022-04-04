@@ -1,0 +1,11 @@
+# Animation
+
+```{r animation library, message=F, warning=F}
+library(tidyverse)
+library(gganimate)
+library(gapminder)
+```
+
+For animation, just need to specify the transition in the data.
+
+Easiest transition is time.

@@ -1,0 +1,92 @@
+# Maps and the Census
+
+## Pitfalls with Spatial Data
+
+Be careful of using zip codes, geographic entities where the values of focal variables simply restate population size, etc.
+
+Feature of randomness is that it is clumpier than we expect.
+
+- Ex: Plotting random points on a map.
+
+- We should not assume that the clumpiness = structured process when it can also happen from random processes.
+
+## NC Data
+
+```{r maps census libraries, message= F, warning = F}
+library(tidyverse)
+library(tidycensus)
+library(socviz)
+library(sf)
+library(babynames)
+library(tigris)
+```
+
+```{r maps census knitr}
+knitr::opts_chunk$set(message = F, warning = F)
+```
+
+```{r nc map}
+# nc <- st_read(system.file("shape/nc.shp"), package = "sf")
+```
+
+```{r}
+counties <- c("Wake County", "San Francisco County", "Durham County")
+
+str_detect("[e]", counties)
+```
+
+## Baby Names
+
+```{r}
+popular_names <- babynames %>% 
+  group_by(year, sex) %>% 
+  slice_max(n = 3, order_by = prop)
+
+babynames %>% 
+  filter(sex == "F") %>% 
+  group_by(year) %>% 
+  mutate(popularity = -rank(prop)) %>% 
+  filter(name == "Mary") %>% 
+  ggplot(mapping = aes(x = year, y = popularity)) +
+  geom_point()
+```
+
+```{r}
+babynames %>% 
+  filter(sex == "M" & name == "Oliver") %>% 
+  group_by(year) %>% 
+  ggplot(mapping = aes(x = year, y = prop)) +
+  geom_line(size = 1.1) +
+  scale_y_continuous(labels = scales::percent) +
+  scale_x_continuous(breaks = seq(1880, 2015, by = 10)) +
+  labs(y = "Percent of all Names", x = "Year", title = "Popularity of Oliver") +
+  theme_light()
+```
+
+```{r most popular}
+babynames %>% 
+  group_by(year, sex) %>% 
+  slice_max(n = 1, order_by = prop) %>% 
+  ggplot(mapping = aes(x = year, y = prop, color = sex)) +
+  geom_line(size = 1) + scale_y_continuous(labels = scales::percent) +
+  scale_x_continuous(breaks = seq(1880, 2015, by = 10)) +
+  labs(y = "Percent", x = "Year",
+       title = "Most Popular Name as a Percent of All Names",
+       color = "Sex") +
+  theme(legend.position = "top")
+```
+
+```{r unpopular names}
+babynames %>% 
+  group_by(year, sex) %>%
+  filter(prop <= 0.001) %>%
+  group_by(year, sex) %>% 
+  tally() %>%   
+  ggplot(mapping = aes(x = year, y = n, color = sex)) + 
+  geom_line(size = 1) + scale_y_continuous(labels = scales::comma) +
+  scale_x_continuous(breaks = seq(1880, 2015, by = 10)) +
+  labs(y = "Count", x = "Year", 
+       title = "Names with a frequency of 1 in 1,000 or less",
+       color = "Sex") + 
+  theme(legend.position = "top")
+```

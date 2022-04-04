@@ -1,0 +1,53 @@
+# Network Data
+
+Networks are a kind of social structure. 
+
+- **Nodes**: The individuals in a network connected by **edges**. 
+
+- **Direct** ties consider whether relationships exist. **Indirect** considers the type of relationship between two nodes.
+
+Simplest network is a diad (2 individuals with one link). 
+
+Questions: How do we evaluate an edge/connection? 
+
+- With people: do they have to be present, do they have to know each other at a certain level, etc.?
+
+## Groups and Categories
+
+A group is created relationaly (e.g. sorority member, friendship) whereas a category is determined based on non-relational criteria (e.g. being a woman, Christian).
+
+### Group and ties
+
+There is a duality between individuals who interact with others and the groups who interact with other groups.
+
+```{r network libraries}
+library(tidyverse)
+library(socviz)
+library(kjhnet)
+```
+
+Multiplying a matrix times its transposed matrix can create an estimation of the strength of an individual in a social network (i.e. how my organizations they are in as well as how many people).
+
+Betweenness centrality vs. number of groups someone belongs. 
+
+- Being regarded by others who are also well regarded.
+
+## Ilyad
+
+Direction of arrow: from victor to loser (direction of spear) or from loser to victor (direction of glory).
+
+Degree centrality: The number of connections one has. In this context, the number of people one kills. 
+
+But the centrality of characters in the Ilyad not really determined by number of people they killed, but the importance of those that they did kill.
+
+Betweeness centrality: The number of paths in a group that can go through a certain node.
+
+- The latter emphasizes the relational structure of the Ilyad. 
+
+Alpha centrality: Evaluates centrality by the status captured by others, highly regarded from highly regarded (e.g. pecking order).
+
+## Network relations in unexpected places
+
+New professor exchanges by Ph.D. hires.
+
+- It is helpful to transform individual data to relational to investigate structure even if it is not he final product.
