@@ -1,5 +1,17 @@
 # Network Data
 
+```{r network libraries, message=F, warning=F, include=F}
+library(tidyverse)
+library(socviz)
+library(ggraph)
+library(tidygraph)
+library(kjhnet)
+```
+
+```{r network knitr, include=F}
+knitr::opts_chunk$set(warning = F, message = F)
+```
+
 Networks are a kind of social structure. 
 
 - **Nodes**: The individuals in a network connected by **edges**. 
@@ -20,12 +32,6 @@ A group is created relationaly (e.g. sorority member, friendship) whereas a cate
 
 There is a duality between individuals who interact with others and the groups who interact with other groups.
 
-```{r network libraries}
-library(tidyverse)
-library(socviz)
-library(kjhnet)
-```
-
 Multiplying a matrix times its transposed matrix can create an estimation of the strength of an individual in a social network (i.e. how my organizations they are in as well as how many people).
 
 Betweenness centrality vs. number of groups someone belongs. 
@@ -36,18 +42,152 @@ Betweenness centrality vs. number of groups someone belongs.
 
 Direction of arrow: from victor to loser (direction of spear) or from loser to victor (direction of glory).
 
-Degree centrality: The number of connections one has. In this context, the number of people one kills. 
+Degree centrality: The number of connections one has. In this context, the number of people one kills.
+
+```{r il_tidy}
+il_tidy
+
+il_tidy %>% 
+  activate(nodes) %>% 
+  mutate(centrality = centrality_degree()) %>% 
+  as_tibble() %>% 
+  arrange(desc(centrality)) %>% 
+  top_n(10, wt = centrality) %>% 
+  ggplot(mapping = aes(x = centrality,
+                       y = reorder(name, centrality),
+                       color = affil)) +
+  geom_point(size = 3) +
+  labs(x = "Centrality", y = NULL, color = "Side") +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
+```{r iliad graph}
+label_colors <- c(prismatic::clr_lighten("blue", 0.7),
+                  prismatic::clr_lighten("red", 0.7))
+il_tidy %>%
+  activate(nodes) %>%
+  mutate(centrality = centrality_degree(mode = "out")) %>%
+  ggraph(layout = "graphopt") +
+  geom_edge_link(aes(start_cap = label_rect(node1.name),
+                     end_cap = label_rect(node2.name)),
+                 arrow = arrow(length = unit(1.5, 'mm'))) +
+  geom_node_point(aes(color = affil)) +
+  scale_color_manual(values = c("blue", "red"),
+                     labels = c("Athenian", "Trojan")) +
+  guides(color = "none", fill = "none") +
+  geom_node_label(aes(filter = centrality > 0,
+                      label = name, fill = affil),
+                      size = rel(2.5)) +
+  scale_fill_manual(values = label_colors) +
+  labs(title = "Violence in The Iliad") +
+  theme_graph() +
+  theme(plot.title = element_text(size = rel(3)))
+```
 
 But the centrality of characters in the Ilyad not really determined by number of people they killed, but the importance of those that they did kill.
 
-Betweeness centrality: The number of paths in a group that can go through a certain node.
+Betweenness centrality: The number of paths in a group that can go through a certain node.
 
 - The latter emphasizes the relational structure of the Ilyad. 
 
+```{r betweenness centrality}
+il_tidy %>%
+  activate(nodes) %>%
+  mutate(centrality = centrality_degree(),
+         betweenness = centrality_betweenness()) %>%
+  as_tibble() %>%
+  arrange(desc(betweenness)) %>%
+  top_n(10, wt = betweenness) %>%
+  ggplot(mapping = aes(x = betweenness,
+                       y = reorder(name,
+                       betweenness), color = affil)) +
+  geom_point(size = 3) +
+  labs(x = "Betweenness", y = NULL, color = "Side") +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
 Alpha centrality: Evaluates centrality by the status captured by others, highly regarded from highly regarded (e.g. pecking order).
+
+```{r alpha centrality}
+il_tidy %>%
+  activate(edges) %>%
+  filter(act == "kills") %>%
+  reroute(from = to, to = from) %>%
+  activate(nodes) %>%
+  mutate(alpha = centrality_alpha()) %>%
+  as_tibble() %>%
+arrange(desc(alpha)) %>%
+    top_n(10, wt = alpha) %>%
+  ggplot(mapping = aes(x = alpha,
+                       y = reorder(name, alpha),
+                       color = affil)) +
+  geom_point(size = 3) +
+  labs(x = "Alpha Centrality", y = NULL, color = "Side") +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
 
 ## Network relations in unexpected places
 
 New professor exchanges by Ph.D. hires.
 
 - It is helpful to transform individual data to relational to investigate structure even if it is not he final product.
+
+## Paul Revere
+
+### Matrix version
+
+Matrix version of data
+
+```{r head paul revere}
+head(revere)
+```
+
+Where 0 indicates no membership and 1 represents membership
+
+```{r revere matrix}
+r_p <- as.matrix(revere[,-1]) %*% t(as.matrix(revere[,-1]))
+
+# revere[,-1] represents all data except the first column.
+# t() transposes, or flips the dimensions of a matrix (i.e. 2x3 becomes 3x2)
+
+r_p[1:6, 1:6] # 
+
+r_g <- t(as.matrix(revere[,-1])) %*% as.matrix(revere[,-1])
+
+head(r_g)
+```
+
+### Tidy version
+
+```{r revere_groups}
+revere_groups
+
+revere_groups %>% 
+  ggraph(layout = "kk") +  # layout uses an algorithim to fill 2D space
+  geom_edge_link(aes(width = value), color = "gray80") +
+  geom_node_label(aes(label = name)) + theme_graph()
+```
+
+Tidy network data has two sets of data: edges and nodes.
+
+- Edges in this lists the shared membership between any two groups using `value` column.
+
+```{r revere centrality}
+revere_persons 
+
+revere_persons %>% 
+  mutate(centrality = centrality_eigen()) %>% 
+  ggraph(layout = "stress") +
+  geom_edge_link0(aes(edge_width = value), color = "gray60") +
+  scale_edge_width(range = c(0.02, 2)) +
+  geom_node_point() +
+  geom_node_label(aes(filter = centrality > 0.9, label = name), size = rel(2.5)) +
+  theme_graph()
+```
+
+# The Iliad
+

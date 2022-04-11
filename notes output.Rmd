@@ -1,0 +1,418 @@
+---
+title: "Visualizing Society: Class Notes"
+author: "Ben Wallace"
+date: "1/12/2022"
+site: bookdown::bookdown_site
+output: bookdown::gitbook
+documentclass: book
+link-citations: yes
+description: "This is my notebook for SOCIOL 232 at Duke University"
+---
+---
+title: "Visualizing Society: Class Notes"
+author: "Ben Wallace"
+date: "1/12/2022"
+site: bookdown::bookdown_site
+output: bookdown::gitbook
+documentclass: book
+link-citations: yes
+description: "This is my notebook for SOCIOL 232 at Duke University"
+---
+# Class Notes: Visualizing Society {-}
+
+<!--chapter:end:index.Rmd-->
+
+
+# January 12, Learning R
+
+Placeholder
+
+
+### What R looks like
+### Everything in R has a name
+### Do things to objects with a function
+### Types and classes
+### First plots
+
+<!--chapter:end:01-learningR.Rmd-->
+
+
+# January 19, Ways of Seeing
+
+Placeholder
+
+
+### Berger and Renaissance Art
+### Visual Literacy of Quantitative Data
+
+<!--chapter:end:02-seeing.Rmd-->
+
+
+# Making Graphs
+
+Placeholder
+
+
+### What exactly is a graph anyway?
+### How ggplot works: The flow of action
+## January 26, Making Graphs (Continuation)
+### Mapping vs. setting aesthetics
+### Palmer Penguins and Simpson's Paradox
+### Grouped data and group aesthetic
+
+<!--chapter:end:03-graphs.Rmd-->
+
+
+# Vision Data and Design
+
+Placeholder
+
+
+## Smoothers
+## Bad taste, bad data, and bad perception
+### Bad taste
+### Bad data
+### Bad perception
+#### Edges and contrasts
+#### Color
+#### Pre-attentive processing
+## Gestalt inferences
+
+<!--chapter:end:04-visiondata.Rmd-->
+
+
+# Textual Analysis
+
+Placeholder
+
+
+## Gutenberg data
+## Tidydata
+## Saving your Work
+
+<!--chapter:end:05-textualanalysis.Rmd-->
+
+
+# Tidy Data
+
+Placeholder
+
+
+## Counts are easy
+## Transform data first if dealing with proportions or other summary statistics
+### `group_by()`
+### `filter()` and `select()`
+### `Mutate()`
+### `Summarize()`
+## GSS Data example
+### Objects in pipeline carry forward assumptions
+### Shorthand version
+### Pipeline tables are easier to check for errors
+### GSS Graph
+## Other forms of facetting
+### Facetting multiple variables
+### Facet grid
+## The Process
+## Organ Data
+
+<!--chapter:end:06-tidy.Rmd-->
+
+# What is Data
+
+Sports are a "model organism" of social science. The rules provide a rigid and episodic but still socially real model of human behavior.
+
+Random: Use `glue` package to add color to the titles and other labels.
+
+## History of Data
+
+There is a relationship between the history of data and the development of *markets* and the *state*.
+
+Categories used in data both reflect and express historically-contingent social formations.
+
+- Categories from North Carolina's 1790 census sets up the hierarchy from free white males to slaves.
+
+  - Later focus on how to categorize people who interracial through langauge of "Mulatto, Quadroom, Octoroon..." during Jim Crow.
+
+There are three broad ideas about the relationships between categories and the what we think of as the world or reality.
+
+- "Carving nature at the joints," trying to see what the world *objectively* looks like.
+
+- Process of data collection is subjective (e.g. American vs. French beef cuts).
+
+- Realists argue that there is an objective and subjective experience; purpose of science to approximate objectivity.
+
+Categories should be exclusive and exhaustive (i.e. observations cannot belong to more than one category and every observation should fit a category).
+
+
+
+
+<!--chapter:end:07-data.Rmd-->
+
+
+# Pandemic Data
+
+Placeholder
+
+
+## Vegetable Fat and Animal Fat Plot
+## COVID-19
+### `dplyr`'s window functions
+### Patchwork
+## Organ Data
+
+<!--chapter:end:08-pandemic.Rmd-->
+
+
+# Missing Data
+
+Placeholder
+
+
+## Selection Bias
+### Simpson's Paradox
+### Collider Bias
+### Hollywood
+## Missing Observations
+### Organ data and `visdat`
+### Congressional Data
+#### Upset Plots
+
+<!--chapter:end:09-missingness.Rmd-->
+
+
+# Making Maps
+
+Placeholder
+
+
+## Choropleths
+## State-level Election Data
+### Using simple features and `geom_sf()`
+### Keeping Zero Count Rows
+## Population Components Example
+
+<!--chapter:end:10-maps.Rmd-->
+
+
+# Maps and the Census
+
+Placeholder
+
+
+## Pitfalls with Spatial Data
+## NC Data
+## Baby Names
+
+<!--chapter:end:11-mapscensus.Rmd-->
+
+
+# Network Data
+
+Placeholder
+
+
+## Groups and Categories
+### Group and ties
+## Ilyad
+## Network relations in unexpected places
+## Paul Revere
+### Matrix version
+### Tidy version
+
+<!--chapter:end:12-networks.Rmd-->
+
+
+
+
+<!--chapter:end:13-animation.Rmd-->
+
+# Polishing your Plots
+
+## Building a Plot a Piece at a Time
+
+```{r polish libraries, message=F, warning=F}
+library(socviz)
+library(tidyverse)
+library(ggrepel)
+library(colorspace)
+```
+
+```{r}
+head(asasec)
+
+p <- ggplot(subset(asasec, Year == 2014),
+            mapping = aes(x = Members, y = Revenues, label = Sname))
+
+p + geom_point() + geom_smooth()
+```
+
+How to improve plot?
+
+1. Improve smoother
+
+2. Remove needless information like `se = T`
+
+3. Add text 
+
+4. Fix scales
+
+5. Theme
+
+```{r}
+p + geom_smooth(method = 'lm', se = FALSE, color = 'gray80') +
+  geom_point(mapping = aes(color = Journal)) +
+  geom_text_repel(data = subset(asasec,
+                                Year == 2014 & Revenues > 10000)) +
+  scale_y_continuous(labels = scales::dollar_format())
+```
+
+In presentations, can use the layers to effectively communicate a story about the data.
+
+- Communicated differently than when producing data visualizations for print.
+
+## Theme functions
+
+Built-in themes can be added per plot or globally set.
+
+```{r include=FALSE}
+theme_set(theme_bw()) # globally
+
+p + theme_bw() # per plot
+```
+
+`theme()` function customizes individual elements in visualization.
+
+- Should be used intentionally.
+
+## Case studies
+
+1. **Don't** use two y-axes with different scales.
+
+  - Often used with time series. The use of two scales changes the relative shape of the distribution, can lead to misinterpretations of data.
+  
+2. Think about what quantities should be displayed.
+
+  - Ex: Yahoo plot
+  
+3. Avoid pie charts in general, especially with many slices.
+
+  - Hard to conceptualize differences in proportions.
+  - Color should match the nature of the data (e.g. sequential)
+  
+```{r}
+f_labs <- c(Borrowers = "Percent of \nall Borrowers",
+            Balances = "Percent of \nall Balances")
+
+p <- ggplot(data = studebt,
+            mapping = aes(x = pct/100,
+                          y = Debt,
+                          fill = type))
+
+p + geom_col() + facet_wrap(~ type, labeller = as_labeller(f_labs))
+```
+
+4. 
+
+```{r}
+library(demog)
+
+okboomer %>% 
+  filter(country == "United States") %>% 
+  ggplot(aes(x = date, y = births_pct_day)) +
+  geom_line(size = 0.5) +
+  labs(x = "Year",
+       y = "Average daily births per million")
+```
+
+```{r}
+# okboomer_p <- okboomer %>% 
+#   mutate(year_fct = factor(year,
+#                            levels = unique(year),
+#                            ordered = TRUE),
+#          month_fct = factor(month,
+#                             levels = rev())
+```
+
+Layer, highlight, repeat.
+
+<!--chapter:end:14-polishing.Rmd-->
+
+
+# Class Notes: Visualizing Society {-}
+
+Placeholder
+
+
+### What R looks like
+### Everything in R has a name
+### Do things to objects with a function
+### Types and classes
+### First plots
+### Berger and Renaissance Art
+### Visual Literacy of Quantitative Data
+### What exactly is a graph anyway?
+### How ggplot works: The flow of action
+## January 26, Making Graphs (Continuation)
+### Mapping vs. setting aesthetics
+### Palmer Penguins and Simpson's Paradox
+### Grouped data and group aesthetic
+## Smoothers
+## Bad taste, bad data, and bad perception
+### Bad taste
+### Bad data
+### Bad perception
+#### Edges and contrasts
+#### Color
+#### Pre-attentive processing
+## Gestalt inferences
+## Gutenberg data
+## Tidydata
+## Saving your Work
+## Counts are easy
+## Transform data first if dealing with proportions or other summary statistics
+### `group_by()`
+### `filter()` and `select()`
+### `Mutate()`
+### `Summarize()`
+## GSS Data example
+### Objects in pipeline carry forward assumptions
+### Shorthand version
+### Pipeline tables are easier to check for errors
+### GSS Graph
+## Other forms of facetting
+### Facetting multiple variables
+### Facet grid
+## The Process
+## Organ Data
+## History of Data
+## Vegetable Fat and Animal Fat Plot
+## COVID-19
+### `dplyr`'s window functions
+### Patchwork
+## Organ Data
+## Selection Bias
+### Simpson's Paradox
+### Collider Bias
+### Hollywood
+## Missing Observations
+### Organ data and `visdat`
+### Congressional Data
+#### Upset Plots
+## Choropleths
+## State-level Election Data
+### Using simple features and `geom_sf()`
+### Keeping Zero Count Rows
+## Population Components Example
+## Pitfalls with Spatial Data
+## NC Data
+## Baby Names
+## Groups and Categories
+### Group and ties
+## Ilyad
+## Network relations in unexpected places
+## Building a Plot a Piece at a Time
+## Theme functions
+## Case studies
+
+<!--chapter:end:notes-output.Rmd-->
+
